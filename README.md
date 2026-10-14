@@ -1,22 +1,25 @@
 # APP Alquileres
 
-Aplicación independiente en PHP + MySQL/MariaDB para gestionar alquileres. Entorno inicial WAMP en Windows y posterior despliegue en servidor web.
+Aplicación independiente PHP + MySQL/MariaDB basada en el documento funcional **Manual-Alquiler-Manager.pdf**. Entorno inicial WAMP en Windows.
 
 ## Instalación en WAMP
-1. Copia el proyecto en `C:\\wamp64\\www\\APP-Alquileres`.
-2. Abre phpMyAdmin e importa `database.sql`. El esquema utiliza `CREATE TABLE IF NOT EXISTS`; no elimina tablas ni datos.
-3. Revisa `config/config.php` (base de datos `app_alquileres`, usuario local `root`, contraseña vacía por defecto).
-4. Abre `http://localhost/APP-Alquileres/public/setup.php` y crea el administrador con una contraseña propia de al menos 12 caracteres.
-5. Accede a `http://localhost/APP-Alquileres/public/`.
-6. Elimina `public/setup.php` después de crear el administrador.
+1. Copia el repositorio en `C:\\wamp64\\www\\APP-Alquileres`.
+2. En phpMyAdmin importa `database.sql`.
+3. Revisa `config/config.php` (base de datos `app_alquileres`; en WAMP local el usuario predeterminado es `root` y la contraseña está vacía).
+4. Abre `http://localhost/APP-Alquileres/public/setup.php`, crea el administrador con una contraseña propia de al menos 12 caracteres.
+5. Elimina `public/setup.php` inmediatamente después de crear el administrador.
+6. Entra en `http://localhost/APP-Alquileres/public/login.php`.
 
-## Incluido en esta primera versión
-- Inicio y cierre de sesión con contraseña cifrada, sesiones y protección CSRF.
-- Resumen de inquilinos, cargos, ingresos y fianzas pendientes.
-- Alta y listado de inquilinos, cargos, ingresos y fianzas.
-- Creación básica de usuarios con roles ADMIN, GESTOR y LECTURA.
-- Esquema SQL inicial completo, sin migraciones separadas.
-- Interfaz adaptable a escritorio y móvil.
+## Módulos incluidos
+- **Inquilinos:** alta, edición, borrado cuando no hay movimientos asociados, activos primero, estado, notas, fechas, unidad, alquiler mensual, opción para crear fianza automáticamente y ficha imprimible/PDF por navegador.
+- **Cargos:** alta, edición y borrado; categoría, concepto, inquilino, importe, mes y pagado por; total a cobrar.
+- **Ingresos:** alta, edición y borrado de ingresos manuales; método y total cobrado. Los ingresos contables generados al liquidar fianzas se protegen frente al borrado manual.
+- **Fianzas y daños:** alta, edición, borrado antes de liquidar, motivo, importe de daños y detalle; botón de liquidación que calcula deuda, retención, devolución y crea ingresos de compensación/daños.
+- **Dashboard:** KPIs financieros, balance por inquilino, cargos por tipo y enlaces a ficha individual.
+- **Estadísticas:** filtros por inquilino, año y rango de fechas; cargos, ingresos, balance, porcentaje de cobro, desglose por tipo/método, evolución mensual y resumen anual.
+- **Usuarios y autenticación:** roles ADMIN, GESTOR y LECTURA; contraseñas cifradas, sesiones y protección CSRF.
+- **Backups:** crear y descargar copias SQL, listar, borrar, subir y restaurar con confirmación explícita. El módulo requiere que WAMP tenga los ejecutables `mysql.exe`/ `mariadb.exe` y `mysqldump.exe`/ `mariadb-dump.exe` en las rutas habituales.
+- **Interfaz adaptable** a escritorio y móvil, pendiente de pruebas con dispositivos reales.
 
-## Pendiente
-Edición completa de registros, estadísticas detalladas, PDF individual por inquilino, copias y restauración desde la propia aplicación, pruebas integrales y revisión de seguridad antes de producción. Esta base inicial no debe exponerse a Internet sin HTTPS, credenciales de base de datos adecuadas y copias externas.
+## Importante
+Esta es una primera implementación amplia del manual, todavía no validada de extremo a extremo en tu instalación. Antes de usar datos reales, prueba los flujos con datos ficticios y guarda copias externas. No expongas la aplicación a Internet sin HTTPS, credenciales de base de datos adecuadas y revisión de seguridad. El botón de ficha genera una página imprimible que permite usar “Imprimir / Guardar como PDF”; no utiliza todavía una biblioteca PDF de servidor.
