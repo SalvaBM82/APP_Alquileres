@@ -3,7 +3,7 @@ require __DIR__ . '/../app/bootstrap.php';
 require_login();
 require_once __DIR__ . '/../app/recurring_charges.php';
 $user=current_user();
-sync_recurring_charges($pdo);
+if($_SERVER['REQUEST_METHOD']!=='POST')sync_recurring_charges($pdo);
 $error='';$ok='';
 $types=['Alquiler','Basura','Luz','Agua','Internet','Electricidad','Reparacion','Otros'];
 $periods=['MENSUAL'=>'Mensual','TRIMESTRAL'=>'Trimestral','ANUAL'=>'Anual'];
