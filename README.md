@@ -22,5 +22,9 @@ Aplicación independiente PHP + MySQL/MariaDB basada en el documento funcional *
 - **Backups:** crear y descargar copias SQL, listar, borrar, subir y restaurar con confirmación explícita. El módulo requiere que WAMP tenga los ejecutables `mysql.exe`/ `mariadb.exe` y `mysqldump.exe`/ `mariadb-dump.exe` en las rutas habituales.
 - **Interfaz adaptable** a escritorio y móvil, pendiente de pruebas con dispositivos reales.
 
+## Manual de ayuda
+- El manual completo está disponible desde la aplicación en `public/ayuda.php` (enlace «Ayuda y manual» del menú).
+- **Mantenimiento obligatorio:** cuando se añada, retire o cambie una función, actualizar en el mismo cambio `public/ayuda.php` con los pasos y ejemplos correctos. Si afecta a la instalación, permisos, estructura de datos o backups, actualizar también este README y `database.sql` cuando corresponda.
+
 ## Importante
 Esta es la primera implementación amplia del manual, todavía no validada de extremo a extremo en tu instalación. Antes de usar datos reales, prueba los flujos con datos ficticios y guarda copias externas. No expongas la aplicación a Internet sin HTTPS, credenciales de base de datos adecuadas y revisión de seguridad. El botón de ficha genera un PDF descargable directamente desde PHP.
