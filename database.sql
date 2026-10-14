@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS unidades (
   creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   actualizado_en TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_unidades_ubicacion FOREIGN KEY (ubicacion_id) REFERENCES ubicaciones(id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_unidad_nombre (ubicacion_id,nombre),
   INDEX idx_unidades_ubicacion (ubicacion_id),
   INDEX idx_unidades_estado (estado)
 ) ENGINE=InnoDB;
@@ -115,7 +116,7 @@ WHERE EXISTS (SELECT 1 FROM inquilinos WHERE unidad_id IS NULL)
 
 SET @ubicacion_legacy := (SELECT id FROM ubicaciones WHERE nombre='Ubicación inicial' ORDER BY id LIMIT 1);
 
-INSERT INTO unidades (ubicacion_id,nombre,tipo,estado)
+INSERT IGNORE INTO unidades (ubicacion_id,nombre,tipo,estado)
 SELECT @ubicacion_legacy,
        COALESCE(NULLIF(TRIM(i.unidad),''),'Unidad sin especificar'),
        'OTRA','ACTIVA'
