@@ -145,3 +145,38 @@ INSERT IGNORE INTO configuracion_app(clave,valor) VALUES
  ('titulo_web','APP Alquileres · Gestión de propiedades'),
  ('subtitulo_app','Gestión de propiedades'),
  ('color_principal','#2859a6');
+
+
+-- Plantillas para cargos recurrentes, aplicables a una unidad o a un inquilino.
+CREATE TABLE IF NOT EXISTS cargos_recurrentes (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  unidad_id INT UNSIGNED NULL,
+  inquilino_id INT UNSIGNED NULL,
+  tipo ENUM('Alquiler','Basura','Luz','Agua','Internet','Electricidad','Reparacion','Otros') NOT NULL DEFAULT 'Otros',
+  concepto VARCHAR(255) NOT NULL,
+  importe DECIMAL(10,2) NOT NULL,
+  periodicidad ENUM('MENSUAL','TRIMESTRAL','ANUAL') NOT NULL DEFAULT 'MENSUAL',
+  fecha_inicio DATE NOT NULL,
+  fecha_fin DATE NULL,
+  pagado_por ENUM('Propietario','Inquilino','Otro') NOT NULL DEFAULT 'Inquilino',
+  activo TINYINT(1) NOT NULL DEFAULT 1,
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_recurrentes_unidad FOREIGN KEY (unidad_id) REFERENCES unidades(id) ON DELETE RESTRICT,
+  CONSTRAINT fk_recurrentes_inquilino FOREIGN KEY (inquilino_id) REFERENCES inquilinos(id) ON DELETE RESTRICT,
+  INDEX idx_recurrentes_unidad (unidad_id,activo),
+  INDEX idx_recurrentes_inquilino (inquilino_id,activo),
+  INDEX idx_recurrentes_periodo (periodicidad,fecha_inicio,fecha_fin)
+) ENGINE=InnoDB;
+
+-- Campos de trazabilidad para saber qué plantilla generó cada cargo.
+-- Las comprobaciones con information_schema permiten importar database.sql más de una vez.
+SET @col_recurrente := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='cargos' AND COLUMN_NAME='recurrente_id');
+SET @sql_recurrente := IF(@col_recurrente=0,'ALTER TABLE cargos ADD COLUMN recurrente_id INT UNSIGNED NULL','SELECT 1');
+PREPARE stmt_recurrente FROM @sql_recurrente; EXECUTE stmt_recurrente; DEALLOCATE PREPARE stmt_recurrente;
+SET @col_periodo := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='cargos' AND COLUMN_NAME='periodo_recurrente');
+SET @sql_periodo := IF(@col_periodo=0,'ALTER TABLE cargos ADD COLUMN periodo_recurrente CHAR(7) NULL','SELECT 1');
+PREPARE stmt_periodo FROM @sql_periodo; EXECUTE stmt_periodo; DEALLOCATE PREPARE stmt_periodo;
+SET @idx_recurrente := (SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='cargos' AND INDEX_NAME='uq_cargo_recurrente_periodo');
+SET @sql_idx_recurrente := IF(@idx_recurrente=0,'CREATE UNIQUE INDEX uq_cargo_recurrente_periodo ON cargos(inquilino_id,recurrente_id,periodo_recurrente)','SELECT 1');
+PREPARE stmt_idx_recurrente FROM @sql_idx_recurrente; EXECUTE stmt_idx_recurrente; DEALLOCATE PREPARE stmt_idx_recurrente;
