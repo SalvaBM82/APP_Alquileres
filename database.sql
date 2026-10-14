@@ -142,5 +142,6 @@ CREATE TABLE IF NOT EXISTS configuracion_app (
 ) ENGINE=InnoDB;
 INSERT IGNORE INTO configuracion_app(clave,valor) VALUES
  ('nombre_app','APP Alquileres'),
+ ('titulo_web','APP Alquileres · Gestión de propiedades'),
  ('subtitulo_app','Gestión de propiedades'),
  ('color_principal','#2859a6');
