@@ -180,3 +180,15 @@ PREPARE stmt_periodo FROM @sql_periodo; EXECUTE stmt_periodo; DEALLOCATE PREPARE
 SET @idx_recurrente := (SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='cargos' AND INDEX_NAME='uq_cargo_recurrente_periodo');
 SET @sql_idx_recurrente := IF(@idx_recurrente=0,'CREATE UNIQUE INDEX uq_cargo_recurrente_periodo ON cargos(inquilino_id,recurrente_id,periodo_recurrente)','SELECT 1');
 PREPARE stmt_idx_recurrente FROM @sql_idx_recurrente; EXECUTE stmt_idx_recurrente; DEALLOCATE PREPARE stmt_idx_recurrente;
+
+
+-- Excepciones para que un cargo recurrente borrado no vuelva a generarse automáticamente.
+CREATE TABLE IF NOT EXISTS cargos_recurrentes_exclusiones (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  inquilino_id INT UNSIGNED NOT NULL,
+  recurrente_id INT UNSIGNED NOT NULL DEFAULT 0,
+  periodo_recurrente CHAR(7) NOT NULL,
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_recurrentes_exclusion_inquilino FOREIGN KEY (inquilino_id) REFERENCES inquilinos(id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_recurrente_exclusion (inquilino_id,recurrente_id,periodo_recurrente)
+) ENGINE=InnoDB;
