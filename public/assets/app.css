@@ -49,9 +49,13 @@ button,.btn{min-height:40px}
  .userbox form{display:flex;flex-direction:column;align-items:stretch;gap:5px;max-width:44vw}
  .userbox form select{max-width:100%;min-width:0;font-size:13px}
  .layout{display:block;min-height:0}
- .sidebar{position:relative;top:auto;width:100%;max-width:100%;padding:8px;gap:6px;flex-direction:row;align-items:stretch;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
- .sidebar a.nav-item{flex:0 0 auto;display:flex;align-items:center;min-width:max-content;min-height:42px;padding:6px 9px;white-space:nowrap;font-size:12px}
- .nav-icon{flex:0 0 25px;width:25px;height:25px}
+ .sidebar{position:relative;top:auto;width:100%;max-width:100%;padding:8px;gap:5px;display:flex;flex-direction:column;align-items:stretch;overflow:visible;border-right:0;border-bottom:1px solid var(--line)}
+ .sidebar .mobile-menu-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:9px;color:var(--ink);font:600 14px system-ui;cursor:pointer}
+ .sidebar .mobile-menu-toggle .toggle-icon{font-size:18px;line-height:1}
+ .sidebar .mobile-nav-links{display:none;flex-direction:column;align-items:stretch;gap:4px;padding-top:4px}
+ .sidebar.mobile-menu-open .mobile-nav-links{display:flex}
+ .sidebar .mobile-nav-links a.nav-item{display:flex;align-items:center;width:100%;min-width:0;min-height:44px;padding:7px 10px;white-space:normal;font-size:14px}
+ .nav-icon{flex:0 0 28px;width:28px;height:28px}
  .content{width:100%;max-width:100%;padding:16px 12px;margin:0}
  .content h1{font-size:22px;line-height:1.2}
  .page-head{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-bottom:14px}
