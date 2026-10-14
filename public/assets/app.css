@@ -20,7 +20,7 @@
 .nav-item.active .nav-icon{background:#d9e6ff}
 .nav-spacer{flex:1;min-height:12px}
 .sidebar a.nav-help{margin-top:10px;border-top:1px solid #e9edf4;border-radius:0 0 9px 9px;padding-top:12px}
-@media(min-width:651px){.sidebar{min-height:calc(100vh - 70px)}}
+@media(min-width:651px){.sidebar{position:sticky;top:0;height:calc(100vh - 70px);min-height:calc(100vh - 70px);overflow-y:auto;align-self:start}.nav-spacer{flex:1 0 12px}}
 @media(max-width:650px){
 .layout{display:block}
 .sidebar{display:flex;flex-direction:row;align-items:center;gap:6px;padding:8px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;border-right:0;border-bottom:1px solid var(--line);scrollbar-width:thin}
