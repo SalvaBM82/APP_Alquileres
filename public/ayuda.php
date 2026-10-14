@@ -6,8 +6,8 @@ $user=current_user();
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ayuda y manual · APP Alquileres</title>
-<link rel="icon" type="image/svg+xml" href="assets/favicon.svg"><link rel="stylesheet" href="assets/app.css">
+<title><?=e(app_setting('titulo_web','APP Alquileres · Gestión de propiedades'))?> · Ayuda y manual</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg"><link rel="stylesheet" href="assets/app.css"><style>:root{--blue:<?=e(app_setting('color_principal','#2859a6'))?>}</style>
 <style>
 .help-page{max-width:1150px;margin:0 auto}.help-layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;align-items:start}
 .help-index{position:sticky;top:14px}.help-index h3{margin-top:0}.help-index a{display:block;padding:7px 9px;border-radius:7px;color:var(--ink);text-decoration:none;font-size:13px}.help-index a:hover{background:#eef3fa}
