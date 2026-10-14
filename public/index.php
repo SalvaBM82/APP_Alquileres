@@ -8,10 +8,26 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
  try{
   if($action==='tenant_save'){
    $id=(int)($_POST['id']??0);$name=trim($_POST['nombre']??'');$unitId=(int)($_POST['unidad_id']??0);if($name==='')throw new RuntimeException('El nombre es obligatorio.');$uq=$pdo->prepare("SELECT nombre FROM unidades WHERE id=? AND estado='ACTIVA'");$uq->execute([$unitId]);$unitName=$uq->fetchColumn();if(!$unitName)throw new RuntimeException('Selecciona una unidad activa válida.');
-   $d=[$name,trim($_POST['dni_nie']??''),trim($_POST['telefono']??''),trim($_POST['email']??''),$unitId,$unitName,($_POST['fecha_entrada']??'')?:null,($_POST['fecha_salida']??'')?:null,max(0,(float)($_POST['alquiler_mensual']??0)),($_POST['estado']??'ACTIVO')==='INACTIVO'?'INACTIVO':'ACTIVO',trim($_POST['notas']??'')];
+   $startDate=($_POST['fecha_entrada']??'')?:null;$endDate=($_POST['fecha_salida']??'')?:null;$rent=max(0,(float)($_POST['alquiler_mensual']??0));if($startDate&&$endDate&&$endDate<$startDate)throw new RuntimeException('La fecha de salida no puede ser anterior a la fecha de entrada.');
+   $d=[$name,trim($_POST['dni_nie']??''),trim($_POST['telefono']??''),trim($_POST['email']??''),$unitId,$unitName,$startDate,$endDate,$rent,($_POST['estado']??'ACTIVO')==='INACTIVO'?'INACTIVO':'ACTIVO',trim($_POST['notas']??'')];
+   $pdo->beginTransaction();
    if($id){$d[]=$id;$pdo->prepare('UPDATE inquilinos SET nombre=?,dni_nie=?,telefono=?,email=?,unidad_id=?,unidad=?,fecha_entrada=?,fecha_salida=?,alquiler_mensual=?,estado=?,notas=? WHERE id=?')->execute($d);}
    else{$pdo->prepare('INSERT INTO inquilinos(nombre,dni_nie,telefono,email,unidad_id,unidad,fecha_entrada,fecha_salida,alquiler_mensual,estado,notas) VALUES(?,?,?,?,?,?,?,?,?,?,?)')->execute($d);$id=(int)$pdo->lastInsertId();if(!empty($_POST['crear_fianza'])&&(float)($_POST['importe_fianza']??0)>0){$amount=(float)$_POST['importe_fianza'];$pdo->prepare("INSERT INTO fianzas(inquilino_id,fecha,pagada,a_devolver,resto,estado,motivo_retencion,importe_danos,detalle_retencion,liquidada) VALUES(?,?,?,0,?,'RETENIDA','Ninguno',0,'',0)")->execute([$id,date('Y-m-d'),$amount,$amount]);}}
-   flash('Inquilino guardado correctamente.');redirect_page('inquilinos');
+   $createdCharges=0;
+   if($startDate&&$rent>0){
+    $firstMonth=new DateTimeImmutable(substr($startDate,0,7).'-01');
+    $lastMonth=new DateTimeImmutable(date('Y-m-01'));
+    if($endDate){$exitMonth=new DateTimeImmutable(substr($endDate,0,7).'-01');if($exitMonth<$lastMonth)$lastMonth=$exitMonth;}
+    if($firstMonth<=$lastMonth){
+     $exists=$pdo->prepare("SELECT id FROM cargos WHERE inquilino_id=? AND tipo='Alquiler' AND mes=? LIMIT 1");
+     $insert=$pdo->prepare("INSERT INTO cargos(fecha,tipo,concepto,inquilino_id,importe,mes,pagado_por) VALUES(?,'Alquiler',?,?,?,?, 'Inquilino')");
+     for($month=$firstMonth;$month<=$lastMonth;$month=$month->modify('+1 month')){
+      $monthKey=$month->format('Y-m');$exists->execute([$id,$monthKey]);
+      if(!$exists->fetchColumn()){$insert->execute([$month->format('Y-m-01'),'Alquiler mensual '.$monthKey,$id,$rent,$monthKey]);$createdCharges++;}
+     }
+    }
+   }
+   $pdo->commit();$message='Inquilino guardado correctamente.';if($createdCharges>0)$message.=' Se han creado '.$createdCharges.' cargos de alquiler pendientes.';flash($message);redirect_page('inquilinos');
   }
   if($action==='tenant_delete'){require_admin();$id=(int)$_POST['id'];$q=$pdo->prepare('SELECT (SELECT COUNT(*) FROM cargos WHERE inquilino_id=?)+(SELECT COUNT(*) FROM ingresos WHERE inquilino_id=?)+(SELECT COUNT(*) FROM fianzas WHERE inquilino_id=?)');$q->execute([$id,$id,$id]);if((int)$q->fetchColumn()>0)throw new RuntimeException('Tiene movimientos asociados. Márcalo como inactivo para conservar el historial.');$pdo->prepare('DELETE FROM inquilinos WHERE id=?')->execute([$id]);flash('Inquilino eliminado.');redirect_page('inquilinos');}
   if(in_array($action,['charge_save','charge_delete'],true)){if($action==='charge_delete'){$pdo->prepare('DELETE FROM cargos WHERE id=?')->execute([(int)$_POST['id']]);flash('Cargo eliminado.');redirect_page('cargos');}
