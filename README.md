@@ -6,7 +6,7 @@ Aplicación independiente PHP + MySQL/MariaDB basada en el documento funcional *
 1. Copia el repositorio en `C:\\wamp64\\www\\APP-Alquileres`.
 2. En phpMyAdmin importa `database.sql`.
 3. Revisa `config/config.php` (base de datos `app_alquileres`; en WAMP local el usuario predeterminado es `root` y la contraseña está vacía).
-4. Abre `http://localhost/APP-Alquileres/public/setup.php`, crea el administrador con una contraseña propia de al menos 12 caracteres.
+4. Abre `http://localhost/APP-Alquileres/public/setup.php`, crea el administrador con una contraseña propia de al menos 8 caracteres.
 5. Elimina `public/setup.php` inmediatamente después de crear el administrador.
 6. Entra en `http://localhost/APP-Alquileres/public/login.php`.
 
