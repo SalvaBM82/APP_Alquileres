@@ -73,3 +73,58 @@ CREATE TABLE IF NOT EXISTS fianzas (
   CONSTRAINT fk_fianzas_inquilino FOREIGN KEY (inquilino_id) REFERENCES inquilinos(id) ON DELETE RESTRICT,
   INDEX idx_fianzas_estado (estado)
 ) ENGINE=InnoDB;
+
+-- Multiubicación: una ubicación puede ser una vivienda independiente o agrupar varias unidades.
+CREATE TABLE IF NOT EXISTS ubicaciones (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(160) NOT NULL,
+  tipo ENUM('INDEPENDIENTE','MULTIUNIDAD') NOT NULL DEFAULT 'INDEPENDIENTE',
+  direccion VARCHAR(255) NULL,
+  descripcion TEXT NULL,
+  estado ENUM('ACTIVA','INACTIVA') NOT NULL DEFAULT 'ACTIVA',
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_ubicaciones_estado (estado),
+  INDEX idx_ubicaciones_nombre (nombre)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS unidades (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ubicacion_id INT UNSIGNED NOT NULL,
+  nombre VARCHAR(160) NOT NULL,
+  tipo ENUM('VIVIENDA','HABITACION','LOCAL','OTRA') NOT NULL DEFAULT 'VIVIENDA',
+  descripcion TEXT NULL,
+  estado ENUM('ACTIVA','INACTIVA') NOT NULL DEFAULT 'ACTIVA',
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_unidades_ubicacion FOREIGN KEY (ubicacion_id) REFERENCES ubicaciones(id) ON DELETE RESTRICT,
+  INDEX idx_unidades_ubicacion (ubicacion_id),
+  INDEX idx_unidades_estado (estado)
+) ENGINE=InnoDB;
+
+-- Añade la relación a la unidad sin borrar ni reemplazar la columna unidad anterior.
+-- IF NOT EXISTS permite volver a importar este archivo en MariaDB sin duplicar la columna.
+ALTER TABLE inquilinos ADD COLUMN IF NOT EXISTS unidad_id INT UNSIGNED NULL;
+
+-- Migración conservadora: los inquilinos existentes se asignan a una ubicación y
+-- se crea una unidad por cada valor histórico del campo "unidad".
+INSERT INTO ubicaciones (nombre,tipo,direccion,descripcion,estado)
+SELECT 'Ubicación inicial','MULTIUNIDAD',NULL,'Ubicación creada automáticamente para conservar los registros anteriores','ACTIVA'
+WHERE EXISTS (SELECT 1 FROM inquilinos WHERE unidad_id IS NULL)
+  AND NOT EXISTS (SELECT 1 FROM ubicaciones WHERE nombre='Ubicación inicial');
+
+SET @ubicacion_legacy := (SELECT id FROM ubicaciones WHERE nombre='Ubicación inicial' ORDER BY id LIMIT 1);
+
+INSERT INTO unidades (ubicacion_id,nombre,tipo,estado)
+SELECT @ubicacion_legacy,
+       COALESCE(NULLIF(TRIM(i.unidad),''),'Unidad sin especificar'),
+       'OTRA','ACTIVA'
+FROM inquilinos i
+WHERE i.unidad_id IS NULL AND @ubicacion_legacy IS NOT NULL
+GROUP BY COALESCE(NULLIF(TRIM(i.unidad),''),'Unidad sin especificar');
+
+UPDATE inquilinos i
+JOIN unidades u ON u.ubicacion_id=@ubicacion_legacy
+ AND u.nombre=COALESCE(NULLIF(TRIM(i.unidad),''),'Unidad sin especificar')
+SET i.unidad_id=u.id
+WHERE i.unidad_id IS NULL AND @ubicacion_legacy IS NOT NULL;
