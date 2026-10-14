@@ -38,7 +38,7 @@ $units=$pdo->query("SELECT u.*,l.nombre ubicacion_nombre,(SELECT COUNT(*) FROM i
 <html lang="es">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ubicaciones · APP Alquileres</title><link rel="icon" type="image/svg+xml" href="assets/favicon.svg"><link rel="stylesheet" href="assets/app.css">
+<title><?=e(app_setting('titulo_web','APP Alquileres · Gestión de propiedades'))?> · Ubicaciones</title><link rel="icon" type="image/svg+xml" href="assets/favicon.svg"><link rel="stylesheet" href="assets/app.css"><style>:root{--blue:<?=e(app_setting('color_principal','#2859a6'))?>}</style>
 <style>
 .locations-page{max-width:1200px;margin:0 auto}
 .help-panel{border:1px solid #cbdaf0;background:#f6f9ff;border-radius:12px;margin:14px 0;padding:0 15px;color:#344054}
