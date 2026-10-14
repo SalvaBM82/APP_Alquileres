@@ -19,6 +19,7 @@ function sync_recurring_charges(PDO $pdo): int {
     $currentMonth = new DateTimeImmutable(date('Y-m-01'));
     $exists = $pdo->prepare("SELECT id FROM cargos WHERE inquilino_id=? AND tipo=? AND mes=? AND LOWER(TRIM(concepto))=LOWER(TRIM(?)) LIMIT 1");
     $existsRent = $pdo->prepare("SELECT id FROM cargos WHERE inquilino_id=? AND tipo='Alquiler' AND mes=? LIMIT 1");
+    $rentConfiguredQ = $pdo->prepare("SELECT COUNT(*) FROM cargos_recurrentes WHERE tipo='Alquiler' AND (unidad_id=? OR inquilino_id=?)");
     $insert = $pdo->prepare("INSERT IGNORE INTO cargos(fecha,tipo,concepto,inquilino_id,importe,mes,pagado_por,recurrente_id,periodo_recurrente) VALUES(?,?,?,?,?,?,?,?,?)");
     $created = 0;
 
@@ -41,9 +42,9 @@ function sync_recurring_charges(PDO $pdo): int {
 
         // Compatibilidad: si no se ha configurado una plantilla de alquiler,
         // el campo de alquiler mensual del inquilino sigue generando el alquiler.
-        $hasRentTemplate = false;
-        foreach ($effective as $template) if ($template['tipo'] === 'Alquiler') { $hasRentTemplate = true; break; }
-        if (!$hasRentTemplate && (float)$tenant['alquiler_mensual'] > 0) {
+        $rentConfiguredQ->execute([$unitId, $tenantId]);
+        $hasRentConfiguration = (int)$rentConfiguredQ->fetchColumn() > 0;
+        if (!$hasRentConfiguration && (float)$tenant['alquiler_mensual'] > 0) {
             $effective[] = [
                 'id' => 0, 'tipo' => 'Alquiler', 'concepto' => 'Alquiler mensual',
                 'importe' => (float)$tenant['alquiler_mensual'], 'periodicidad' => 'MENSUAL',
