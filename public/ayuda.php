@@ -1,7 +1,8 @@
 <?php
 require __DIR__ . '/../app/bootstrap.php';
 require_login();
-$user=current_user();
+require_once __DIR__ . '/../app/recurring_charges.php';
+$user=current_user();if($_SERVER['REQUEST_METHOD']!=='POST')sync_recurring_charges($pdo);
 ?><!doctype html>
 <html lang="es">
 <head>
