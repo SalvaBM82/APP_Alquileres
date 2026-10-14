@@ -1,7 +1,8 @@
 <?php
 require __DIR__ . '/../app/bootstrap.php';
 require_admin();
-$user=current_user();
+require_once __DIR__ . '/../app/recurring_charges.php';
+$user=current_user();if($_SERVER['REQUEST_METHOD']!=='POST')sync_recurring_charges($pdo);
 $defaults=['nombre_app'=>'APP Alquileres','titulo_web'=>'APP Alquileres · Gestión de propiedades','subtitulo_app'=>'Gestión de propiedades','color_principal'=>'#2859a6'];
 $pdo->exec("INSERT IGNORE INTO configuracion_app(clave,valor) VALUES ('titulo_web','APP Alquileres · Gestión de propiedades')");
 $settings=$defaults;
@@ -26,7 +27,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 <div class="layout"><nav class="sidebar" aria-label="Menú principal">
 <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav-links" onclick="const n=this.parentElement;const o=n.classList.toggle('mobile-menu-open');this.setAttribute('aria-expanded',String(o));this.querySelector('.toggle-label').textContent=o?'Cerrar menú':'Menú principal';this.querySelector('.toggle-icon').textContent=o?'✕':'☰'"><span class="toggle-label">Menú principal</span><span class="toggle-icon" aria-hidden="true">☰</span></button><div class="mobile-nav-links" id="mobile-nav-links">
 <div class="nav-heading">MENÚ PRINCIPAL</div><a class="nav-item" href="index.php"><span class="nav-icon">🏠</span><span>Dashboard</span></a>
-<div class="nav-divider"><span>ALQUILERES</span></div><a class="nav-item" href="ubicaciones.php"><span class="nav-icon">🏢</span><span>Ubicaciones e inmuebles</span></a><a class="nav-item" href="index.php?page=inquilinos"><span class="nav-icon">👥</span><span>Inquilinos</span></a>
+<div class="nav-divider"><span>ALQUILERES</span></div><a class="nav-item" href="ubicaciones.php"><span class="nav-icon">🏢</span><span>Ubicaciones e inmuebles</span></a><a class="nav-item" href="index.php?page=inquilinos"><span class="nav-icon">👥</span><span>Inquilinos</span></a><a class="nav-item" href="recurrentes.php"><span class="nav-icon">🔁</span><span>Cargos recurrentes</span></a>
 <div class="nav-divider"><span>ECONOMÍA</span></div><a class="nav-item" href="index.php?page=cargos"><span class="nav-icon">📋</span><span>Cargos</span></a><a class="nav-item" href="index.php?page=ingresos"><span class="nav-icon">💶</span><span>Ingresos</span></a><a class="nav-item" href="index.php?page=fianzas"><span class="nav-icon">🔐</span><span>Fianzas</span></a>
 <div class="nav-divider"><span>HERRAMIENTAS</span></div><a class="nav-item" href="estadisticas.php"><span class="nav-icon">📊</span><span>Estadísticas</span></a><?php if($user['rol']==='ADMIN'):?><a class="nav-item" href="index.php?page=usuarios"><span class="nav-icon">⚙️</span><span>Usuarios</span></a><a class="nav-item" href="backup.php"><span class="nav-icon">💾</span><span>Copias de seguridad</span></a><?php endif;?>
 <div class="nav-spacer"></div><a class="nav-item active" href="configuracion.php" aria-current="page"><span class="nav-icon">🛠️</span><span>Configuración</span></a><a class="nav-item nav-help" href="ayuda.php"><span class="nav-icon">❔</span><span>Ayuda y manual</span></a>
