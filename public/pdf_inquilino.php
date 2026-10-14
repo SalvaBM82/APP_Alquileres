@@ -1,11 +1,11 @@
 <?php
 require __DIR__ . '/../app/bootstrap.php'; require_login();
-$id=(int)($_GET['id']??0);$s=$pdo->prepare('SELECT * FROM inquilinos WHERE id=?');$s->execute([$id]);$t=$s->fetch();if(!$t){http_response_code(404);exit('Inquilino no encontrado');}
+$id=(int)($_GET['id']??0);$s=$pdo->prepare('SELECT t.*,u.nombre unidad_nombre,l.nombre ubicacion_nombre,l.direccion ubicacion_direccion FROM inquilinos t LEFT JOIN unidades u ON u.id=t.unidad_id LEFT JOIN ubicaciones l ON l.id=u.ubicacion_id WHERE t.id=?');$s->execute([$id]);$t=$s->fetch();if(!$t){http_response_code(404);exit('Inquilino no encontrado');}
 $s=$pdo->prepare('SELECT fecha,tipo,concepto,importe FROM cargos WHERE inquilino_id=? ORDER BY fecha,id');$s->execute([$id]);$charges=$s->fetchAll();
 $s=$pdo->prepare('SELECT fecha,concepto,importe,metodo,origen FROM ingresos WHERE inquilino_id=? ORDER BY fecha,id');$s->execute([$id]);$incomes=$s->fetchAll();
 $s=$pdo->prepare('SELECT * FROM fianzas WHERE inquilino_id=? ORDER BY fecha,id');$s->execute([$id]);$deposits=$s->fetchAll();
 $tc=array_sum(array_column($charges,'importe'));$ti=array_sum(array_column($incomes,'importe'));$bal=$ti-$tc;
-$lines=['APP ALQUILERES - FICHA DE INQUILINO','Generado: '.date('d/m/Y H:i'),'','INQUILINO: '.$t['nombre'],'DNI/NIE: '.$t['dni_nie'].' | Telefono: '.$t['telefono'],'Email: '.$t['email'],'Unidad: '.$t['unidad'],'Entrada: '.$t['fecha_entrada'].' | Salida: '.$t['fecha_salida'].' | Estado: '.$t['estado'],'Alquiler mensual: '.money($t['alquiler_mensual']),'','RESUMEN FINANCIERO','Total cargos: '.money($tc),'Total ingresos: '.money($ti),'Balance (ingresos - cargos): '.money($bal),'','CARGOS'];
+$lines=['APP ALQUILERES - FICHA DE INQUILINO','Generado: '.date('d/m/Y H:i'),'','INQUILINO: '.$t['nombre'],'DNI/NIE: '.$t['dni_nie'].' | Telefono: '.$t['telefono'],'Email: '.$t['email'],'Ubicacion: '.($t['ubicacion_nombre']??'').' - '.($t['ubicacion_direccion']??''),'Unidad: '.($t['unidad_nombre']??$t['unidad']),'Entrada: '.$t['fecha_entrada'].' | Salida: '.$t['fecha_salida'].' | Estado: '.$t['estado'],'Alquiler mensual: '.money($t['alquiler_mensual']),'','RESUMEN FINANCIERO','Total cargos: '.money($tc),'Total ingresos: '.money($ti),'Balance (ingresos - cargos): '.money($bal),'','CARGOS'];
 foreach($charges as $r){$lines[]=$r['fecha'].' | '.$r['tipo'].' | '.$r['concepto'].' | '.money($r['importe']);}
 $lines[]='';$lines[]='INGRESOS';
 foreach($incomes as $r){$lines[]=$r['fecha'].' | '.$r['concepto'].' | '.$r['metodo'].' | '.money($r['importe']).($r['origen']!=='NORMAL'?' ['.$r['origen'].']':'');}
