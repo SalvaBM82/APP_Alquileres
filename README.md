@@ -19,7 +19,7 @@ Aplicación independiente PHP + MySQL/MariaDB basada en el documento funcional *
 - **Dashboard:** KPIs financieros y balances con ámbito global o por ubicación/inquilino, detalle de ubicación y unidad, cargos por tipo y enlaces a ficha individual.
 - **Estadísticas:** filtros por ubicación, inquilino, año y rango de fechas; cargos, ingresos, balance, porcentaje de cobro, desglose por tipo/método, evolución mensual y resumen anual.
 - **Usuarios y autenticación:** roles ADMIN, GESTOR y LECTURA; contraseñas cifradas, sesiones y protección CSRF.
-- **Configuración:** preferencias generales de la aplicación para administradores; incluye nombre, texto descriptivo y color principal, con estructura preparada para futuras herramientas.
+- **Configuración:** para administradores; permite editar nombre, título de pestaña, texto descriptivo y color principal. El título y el color se aplican en las páginas de la aplicación. Incluye acceso a Backups y una estructura preparada para ampliar preferencias.
 - **Identidad visual:** logo SVG y favicon propios en `public/assets/`.
 - **Backups:** crear y descargar copias SQL, listar, borrar, subir y restaurar con confirmación explícita. El módulo requiere que WAMP tenga los ejecutables `mysql.exe`/ `mariadb.exe` y `mysqldump.exe`/ `mariadb-dump.exe` en las rutas habituales.
 - **Interfaz adaptable** a escritorio y móvil, pendiente de pruebas con dispositivos reales.
