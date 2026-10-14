@@ -2,3 +2,6 @@
 
 /* Ventanas modales para altas y edición */
 .modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}.modal-panel{width:min(860px,100%);max-height:calc(100vh - 40px);overflow-y:auto;margin:auto;box-shadow:0 24px 80px rgba(0,0,0,.25)}.modal-panel .page-head{margin-bottom:16px}.modal-panel .page-head h3{margin:0}@media(max-width:650px){.modal-backdrop{padding:8px;align-items:flex-start}.modal-panel{max-height:calc(100vh - 16px);margin:auto 0}.modal-panel .form-grid{grid-template-columns:1fr}}
+
+/* Mantener las ventanas de alta/edición pegadas a la parte superior */
+.modal-backdrop{align-items:flex-start}.modal-panel{margin-top:0;margin-bottom:auto}
