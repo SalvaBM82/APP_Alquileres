@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/../app/bootstrap.php'; require_login(); require_once __DIR__ . '/../app/recurring_charges.php';
 $page=$_GET['page']??'dashboard';$allowed=['dashboard','inquilinos','cargos','ingresos','fianzas','usuarios'];if(!in_array($page,$allowed,true))$page='dashboard';
-$user=current_user();sync_recurring_charges($pdo);$error='';if(array_key_exists('filtro_ubicacion',$_GET)){$newLocation=(int)$_GET['filtro_ubicacion'];if($newLocation!==(int)($_SESSION['filtro_ubicacion']??0))unset($_SESSION['filtro_inquilino']);$_SESSION['filtro_ubicacion']=$newLocation;}if(array_key_exists('filtro_inquilino',$_GET))$_SESSION['filtro_inquilino']=(int)$_GET['filtro_inquilino'];$globalTenant=(int)($_SESSION['filtro_inquilino']??0);$globalLocation=(int)($_SESSION['filtro_ubicacion']??0);
+$user=current_user();if($_SERVER['REQUEST_METHOD']!=='POST')sync_recurring_charges($pdo);$error='';if(array_key_exists('filtro_ubicacion',$_GET)){$newLocation=(int)$_GET['filtro_ubicacion'];if($newLocation!==(int)($_SESSION['filtro_ubicacion']??0))unset($_SESSION['filtro_inquilino']);$_SESSION['filtro_ubicacion']=$newLocation;}if(array_key_exists('filtro_inquilino',$_GET))$_SESSION['filtro_inquilino']=(int)$_GET['filtro_inquilino'];$globalTenant=(int)($_SESSION['filtro_inquilino']??0);$globalLocation=(int)($_SESSION['filtro_ubicacion']??0);
 function redirect_page(string $p): never { header('Location: index.php?page='.$p); exit; }
 if($_SERVER['REQUEST_METHOD']==='POST'){
  verify_csrf();$action=$_POST['action']??'';
