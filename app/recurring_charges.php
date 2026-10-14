@@ -20,6 +20,7 @@ function sync_recurring_charges(PDO $pdo): int {
     $exists = $pdo->prepare("SELECT id FROM cargos WHERE inquilino_id=? AND tipo=? AND mes=? AND LOWER(TRIM(concepto))=LOWER(TRIM(?)) LIMIT 1");
     $existsRent = $pdo->prepare("SELECT id FROM cargos WHERE inquilino_id=? AND tipo='Alquiler' AND mes=? LIMIT 1");
     $rentConfiguredQ = $pdo->prepare("SELECT COUNT(*) FROM cargos_recurrentes WHERE tipo='Alquiler' AND (unidad_id=? OR inquilino_id=?)");
+    $excluded = $pdo->prepare('SELECT id FROM cargos_recurrentes_exclusiones WHERE inquilino_id=? AND recurrente_id=? AND periodo_recurrente=? LIMIT 1');
     $insert = $pdo->prepare("INSERT IGNORE INTO cargos(fecha,tipo,concepto,inquilino_id,importe,mes,pagado_por,recurrente_id,periodo_recurrente) VALUES(?,?,?,?,?,?,?,?,?)");
     $created = 0;
 
@@ -83,6 +84,8 @@ function sync_recurring_charges(PDO $pdo): int {
 
             for ($month = $anchor; $month <= $templateEnd; $month = $month->modify('+'.$step.' months')) {
                 $monthKey = $month->format('Y-m');
+                $excluded->execute([$tenantId, (int)$template['id'], $monthKey]);
+                if ($excluded->fetchColumn()) continue;
                 // Un alquiler ya registrado para ese mes prevalece sobre una nueva plantilla.
                 if ($template['tipo'] === 'Alquiler') {
                     $existsRent->execute([$tenantId, $monthKey]);
