@@ -1,7 +1,7 @@
 <?php
-require __DIR__ . '/../app/bootstrap.php'; require_login();
+require __DIR__ . '/../app/bootstrap.php'; require_login(); require_once __DIR__ . '/../app/recurring_charges.php';
 $page=$_GET['page']??'dashboard';$allowed=['dashboard','inquilinos','cargos','ingresos','fianzas','usuarios'];if(!in_array($page,$allowed,true))$page='dashboard';
-$user=current_user();$error='';if(array_key_exists('filtro_ubicacion',$_GET)){$newLocation=(int)$_GET['filtro_ubicacion'];if($newLocation!==(int)($_SESSION['filtro_ubicacion']??0))unset($_SESSION['filtro_inquilino']);$_SESSION['filtro_ubicacion']=$newLocation;}if(array_key_exists('filtro_inquilino',$_GET))$_SESSION['filtro_inquilino']=(int)$_GET['filtro_inquilino'];$globalTenant=(int)($_SESSION['filtro_inquilino']??0);$globalLocation=(int)($_SESSION['filtro_ubicacion']??0);
+$user=current_user();sync_recurring_charges($pdo);$error='';if(array_key_exists('filtro_ubicacion',$_GET)){$newLocation=(int)$_GET['filtro_ubicacion'];if($newLocation!==(int)($_SESSION['filtro_ubicacion']??0))unset($_SESSION['filtro_inquilino']);$_SESSION['filtro_ubicacion']=$newLocation;}if(array_key_exists('filtro_inquilino',$_GET))$_SESSION['filtro_inquilino']=(int)$_GET['filtro_inquilino'];$globalTenant=(int)($_SESSION['filtro_inquilino']??0);$globalLocation=(int)($_SESSION['filtro_ubicacion']??0);
 function redirect_page(string $p): never { header('Location: index.php?page='.$p); exit; }
 if($_SERVER['REQUEST_METHOD']==='POST'){
  verify_csrf();$action=$_POST['action']??'';
@@ -13,21 +13,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
    $pdo->beginTransaction();
    if($id){$d[]=$id;$pdo->prepare('UPDATE inquilinos SET nombre=?,dni_nie=?,telefono=?,email=?,unidad_id=?,unidad=?,fecha_entrada=?,fecha_salida=?,alquiler_mensual=?,estado=?,notas=? WHERE id=?')->execute($d);}
    else{$pdo->prepare('INSERT INTO inquilinos(nombre,dni_nie,telefono,email,unidad_id,unidad,fecha_entrada,fecha_salida,alquiler_mensual,estado,notas) VALUES(?,?,?,?,?,?,?,?,?,?,?)')->execute($d);$id=(int)$pdo->lastInsertId();if(!empty($_POST['crear_fianza'])&&(float)($_POST['importe_fianza']??0)>0){$amount=(float)$_POST['importe_fianza'];$pdo->prepare("INSERT INTO fianzas(inquilino_id,fecha,pagada,a_devolver,resto,estado,motivo_retencion,importe_danos,detalle_retencion,liquidada) VALUES(?,?,?,0,?,'RETENIDA','Ninguno',0,'',0)")->execute([$id,date('Y-m-d'),$amount,$amount]);}}
-   $createdCharges=0;
-   if($startDate&&$rent>0){
-    $firstMonth=new DateTimeImmutable(substr($startDate,0,7).'-01');
-    $lastMonth=new DateTimeImmutable(date('Y-m-01'));
-    if($endDate){$exitMonth=new DateTimeImmutable(substr($endDate,0,7).'-01');if($exitMonth<$lastMonth)$lastMonth=$exitMonth;}
-    if($firstMonth<=$lastMonth){
-     $exists=$pdo->prepare("SELECT id FROM cargos WHERE inquilino_id=? AND tipo='Alquiler' AND mes=? LIMIT 1");
-     $insert=$pdo->prepare("INSERT INTO cargos(fecha,tipo,concepto,inquilino_id,importe,mes,pagado_por) VALUES(?,'Alquiler',?,?,?,?, 'Inquilino')");
-     for($month=$firstMonth;$month<=$lastMonth;$month=$month->modify('+1 month')){
-      $monthKey=$month->format('Y-m');$exists->execute([$id,$monthKey]);
-      if(!$exists->fetchColumn()){$insert->execute([$month->format('Y-m-01'),'Alquiler mensual '.$monthKey,$id,$rent,$monthKey]);$createdCharges++;}
-     }
-    }
-   }
-   $pdo->commit();$message='Inquilino guardado correctamente.';if($createdCharges>0)$message.=' Se han creado '.$createdCharges.' cargos de alquiler pendientes.';flash($message);redirect_page('inquilinos');
+   $createdCharges=sync_recurring_charges($pdo);
+   $pdo->commit();$message='Inquilino guardado correctamente.';if($createdCharges>0)$message.=' Se han generado '.$createdCharges.' cargos recurrentes nuevos.';flash($message);redirect_page('inquilinos');
   }
   if($action==='tenant_delete'){require_admin();$id=(int)$_POST['id'];$q=$pdo->prepare('SELECT (SELECT COUNT(*) FROM cargos WHERE inquilino_id=?)+(SELECT COUNT(*) FROM ingresos WHERE inquilino_id=?)+(SELECT COUNT(*) FROM fianzas WHERE inquilino_id=?)');$q->execute([$id,$id,$id]);if((int)$q->fetchColumn()>0)throw new RuntimeException('Tiene movimientos asociados. Márcalo como inactivo para conservar el historial.');$pdo->prepare('DELETE FROM inquilinos WHERE id=?')->execute([$id]);flash('Inquilino eliminado.');redirect_page('inquilinos');}
   if(in_array($action,['charge_save','charge_delete'],true)){if($action==='charge_delete'){$pdo->prepare('DELETE FROM cargos WHERE id=?')->execute([(int)$_POST['id']]);flash('Cargo eliminado.');redirect_page('cargos');}
@@ -73,7 +60,7 @@ function val(array $row,string $key,$default=''): string {return e($row[$key]??$
 <a class="nav-item <?=$page==='dashboard'?'active':''?>" href="index.php?page=dashboard" <?=$page==='dashboard'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">🏠</span><span>Dashboard</span></a>
 <div class="nav-divider"><span>ALQUILERES</span></div>
 <a class="nav-item" href="ubicaciones.php"><span class="nav-icon" aria-hidden="true">🏢</span><span>Ubicaciones e inmuebles</span></a>
-<a class="nav-item <?=$page==='inquilinos'?'active':''?>" href="index.php?page=inquilinos" <?=$page==='inquilinos'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">👥</span><span>Inquilinos</span></a>
+<a class="nav-item <?=$page==='inquilinos'?'active':''?>" href="index.php?page=inquilinos" <?=$page==='inquilinos'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">👥</span><span>Inquilinos</span></a>\n<a class="nav-item" href="recurrentes.php"><span class="nav-icon" aria-hidden="true">🔁</span><span>Cargos recurrentes</span></a>
 <div class="nav-divider"><span>ECONOMÍA</span></div>
 <a class="nav-item <?=$page==='cargos'?'active':''?>" href="index.php?page=cargos" <?=$page==='cargos'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">📋</span><span>Cargos</span></a>
 <a class="nav-item <?=$page==='ingresos'?'active':''?>" href="index.php?page=ingresos" <?=$page==='ingresos'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">💶</span><span>Ingresos</span></a>
