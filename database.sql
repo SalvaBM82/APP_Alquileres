@@ -133,3 +133,14 @@ JOIN unidades u ON u.ubicacion_id=@ubicacion_legacy
  AND u.nombre=COALESCE(NULLIF(TRIM(i.unidad),''),'Unidad sin especificar')
 SET i.unidad_id=u.id
 WHERE i.unidad_id IS NULL AND @ubicacion_legacy IS NOT NULL;
+
+-- Preferencias configurables de la aplicación
+CREATE TABLE IF NOT EXISTS configuracion_app (
+  clave VARCHAR(80) PRIMARY KEY,
+  valor TEXT NOT NULL,
+  actualizado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+INSERT IGNORE INTO configuracion_app(clave,valor) VALUES
+ ('nombre_app','APP Alquileres'),
+ ('subtitulo_app','Gestión de propiedades'),
+ ('color_principal','#2859a6');
