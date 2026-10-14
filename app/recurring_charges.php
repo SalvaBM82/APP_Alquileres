@@ -33,11 +33,11 @@ function sync_recurring_charges(PDO $pdo): int {
         // Una plantilla del inquilino sustituye la plantilla de unidad equivalente.
         $tenantKeys = [];
         foreach ($tenantTemplates as $template) {
-            $tenantKeys[strtoupper($template['tipo']).'|'.mb_strtolower(trim($template['concepto']))] = true;
+            $tenantKeys[strtoupper($template['tipo']).'|'.strtolower(trim($template['concepto']))] = true;
         }
         $effective = $tenantTemplates;
         foreach ($unitTemplates as $template) {
-            $key = strtoupper($template['tipo']).'|'.mb_strtolower(trim($template['concepto']));
+            $key = strtoupper($template['tipo']).'|'.strtolower(trim($template['concepto']));
             if (!isset($tenantKeys[$key])) $effective[] = $template;
         }
 
