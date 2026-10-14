@@ -4,14 +4,14 @@ Aplicación independiente PHP + MySQL/MariaDB basada en el documento funcional *
 
 ## Instalación en WAMP
 1. Copia el repositorio en `C:\\wamp64\\www\\APP-Alquileres`.
-2. En phpMyAdmin importa `database.sql`.
+2. En phpMyAdmin importa `database.sql`. Si ya tenías la aplicación instalada, descarga primero una copia desde Backups y vuelve a importar este archivo: crea las tablas de ubicaciones/unidades y asigna los inquilinos existentes a una ubicación inicial, sin borrar los movimientos ni las cuentas.
 3. Revisa `config/config.php` (base de datos `app_alquileres`; en WAMP local el usuario predeterminado es `root` y la contraseña está vacía).
 4. Abre `http://localhost/APP-Alquileres/public/setup.php`, crea el administrador con una contraseña propia de al menos 8 caracteres.
 5. Elimina `public/setup.php` inmediatamente después de crear el administrador.
 6. Entra en `http://localhost/APP-Alquileres/public/login.php`.
 
 ## Módulos incluidos
-- **Ubicaciones e inmuebles:** gestiona varias ubicaciones; cada una puede ser una vivienda independiente o un edificio con múltiples viviendas, habitaciones o locales. Cada ubicación contiene unidades y conserva su propio historial.
+- **Ubicaciones e inmuebles:** gestiona varias ubicaciones; cada una puede ser una vivienda independiente o un edificio con múltiples viviendas, habitaciones o locales. Cada ubicación contiene unidades y conserva su propio historial. Las viviendas independientes crean automáticamente una unidad principal.
 - **Inquilinos:** alta, edición, borrado cuando no hay movimientos asociados, activos primero, asignación obligatoria a una unidad, filtro global por ubicación e inquilino, estado, notas, fechas, alquiler mensual, opción para crear fianza automáticamente y PDF individual con ubicación, unidad, cargos, ingresos, balance y fianzas.
 - **Cargos:** alta, edición y borrado; categoría, concepto, inquilino, importe, mes y pagado por; total a cobrar.
 - **Ingresos:** alta, edición y borrado de ingresos manuales; método y total cobrado. Los ingresos contables generados al liquidar fianzas se protegen frente al borrado manual.
