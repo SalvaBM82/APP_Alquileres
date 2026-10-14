@@ -29,3 +29,60 @@
 .nav-icon{width:26px;height:26px;flex-basis:26px;font-size:15px}
 .sidebar a.nav-help{margin-top:0;border-top:0;padding-top:5px}
 }
+
+/* Adaptación móvil global: conserva el escritorio y mejora el uso táctil */
+html{-webkit-text-size-adjust:100%}
+img,svg,video,canvas{max-width:100%;height:auto}
+input,select,textarea,button{max-width:100%}
+button,.btn{min-height:40px}
+.content{min-width:0}
+.table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table-wrap table{margin:0}
+@media(max-width:650px){
+ body{font-size:14px;overflow-x:hidden}
+ .topbar{min-height:0;padding:10px 12px;align-items:center;gap:8px;flex-wrap:wrap}
+ .brand{min-width:0;flex:1 1 145px}
+ .brand img{width:clamp(135px,48vw,210px)!important;max-width:100%!important}
+ .userbox{flex:0 1 auto;min-width:0;display:flex;flex-direction:row;align-items:center;justify-content:flex-end;gap:7px;font-size:11px}
+ .userbox>span{max-width:34vw;overflow-wrap:anywhere;text-align:right}
+ .userbox .btn{padding:7px 9px;min-height:36px;font-size:12px;white-space:nowrap}
+ .userbox form{display:flex;flex-direction:column;align-items:stretch;gap:5px;max-width:44vw}
+ .userbox form select{max-width:100%;min-width:0;font-size:13px}
+ .layout{display:block;min-height:0}
+ .sidebar{position:relative;top:auto;width:100%;max-width:100%;padding:8px;gap:6px;flex-direction:row;align-items:stretch;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+ .sidebar a.nav-item{flex:0 0 auto;display:flex;align-items:center;min-width:max-content;min-height:42px;padding:6px 9px;white-space:nowrap;font-size:12px}
+ .nav-icon{flex:0 0 25px;width:25px;height:25px}
+ .content{width:100%;max-width:100%;padding:16px 12px;margin:0}
+ .content h1{font-size:22px;line-height:1.2}
+ .page-head{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-bottom:14px}
+ .page-head>.actions,.page-head>.btn,.page-head>a.btn{width:100%}
+ .page-head .actions .btn{flex:1 1 auto}
+ .panel{margin:10px 0;padding:13px;border-radius:10px;min-width:0}
+ .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .kpi{margin:0;padding:11px;min-width:0;overflow-wrap:anywhere}
+ .kpi strong{font-size:18px;overflow-wrap:anywhere}
+ .form-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+ .form-grid>div,.form-grid .full{min-width:0;grid-column:1/-1}
+ .form-grid input,.form-grid select,.form-grid textarea,input:not([type=checkbox]):not([type=radio]):not([type=hidden]),select,textarea{font-size:16px;min-width:0}
+ .actions{gap:7px}
+ .actions .btn,.actions button{flex:1 1 auto}
+ .table-wrap{width:100%;margin:0;overscroll-behavior-x:contain}
+ table{min-width:620px}
+ th,td{padding:9px 8px;white-space:normal;overflow-wrap:anywhere}
+ .modal-backdrop{padding:8px;align-items:center;justify-content:center;overflow-y:auto}
+ .modal-panel{width:100%;max-width:100%;max-height:calc(100dvh - 16px);overflow-y:auto;margin:auto;overscroll-behavior:contain}
+ .modal-panel .panel{padding:12px}
+ .modal-panel .form-grid{grid-template-columns:minmax(0,1fr)}
+ .login-body{padding:12px;min-height:100dvh}
+ .login-card{width:100%;max-width:420px;padding:22px 18px}
+ footer{padding:18px 10px}
+}
+@media(max-width:380px){
+ .topbar{padding:8px}
+ .brand img{width:132px!important}
+ .userbox>span{display:none}
+ .content{padding:12px 8px}
+ .kpis{grid-template-columns:minmax(0,1fr)}
+ .sidebar a.nav-item{padding:5px 7px}
+ .btn{padding:8px 10px}
+}
