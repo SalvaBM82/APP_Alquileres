@@ -2,7 +2,7 @@
 require __DIR__ . '/../app/bootstrap.php';
 require_login();
 require_once __DIR__ . '/../app/recurring_charges.php';
-$user=current_user();sync_recurring_charges($pdo);$error='';$ok='';
+$user=current_user();if($_SERVER['REQUEST_METHOD']!=='POST')sync_recurring_charges($pdo);$error='';$ok='';
 if($_SERVER['REQUEST_METHOD']==='POST'){
  verify_csrf();$action=$_POST['action']??'';
  try{
