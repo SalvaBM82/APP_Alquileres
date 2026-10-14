@@ -14,6 +14,15 @@ try {
     exit('No se pudo conectar a la base de datos. Revisa config/config.php e importa database.sql.');
 }
 function e($v): string { return htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
+function app_setting(string $key, string $default=''): string {
+    global $pdo;
+    static $values = null;
+    if ($values === null) {
+        try { $values = $pdo->query('SELECT clave, valor FROM configuracion_app')->fetchAll(PDO::FETCH_KEY_PAIR); }
+        catch (Throwable $e) { $values = []; }
+    }
+    return (string)($values[$key] ?? $default);
+}
 function money($v): string { return number_format((float)$v, 2, ',', '.') . ' €'; }
 function url(string $page='dashboard', array $params=[]): string {
     $cfg = require __DIR__ . '/../config/config.php';
