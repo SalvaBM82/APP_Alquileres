@@ -23,7 +23,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
    $q=$pdo->prepare("SELECT id FROM cargos_recurrentes WHERE activo=1 AND tipo=? AND LOWER(TRIM(concepto))=LOWER(TRIM(?)) AND ".($scope==='unidad'?'unidad_id=?':'inquilino_id=?')." AND id<>? LIMIT 1");$q->execute([$type,$concept,$scope==='unidad'?$unitId:$tenantId,$id]);if($q->fetchColumn())throw new RuntimeException('Ya existe una plantilla activa con ese tipo y concepto en el mismo ámbito.');
    if($id){
     $q=$pdo->prepare('SELECT id FROM cargos_recurrentes WHERE id=?');$q->execute([$id]);if(!$q->fetchColumn())throw new RuntimeException('La plantilla ya no existe.');
-    $pdo->prepare('UPDATE cargos_recurrentes SET unidad_id=?,inquilino_id=?,tipo=?,concepto=?,importe=?,periodicidad=?,fecha_inicio=?,fecha_fin=?,pagado_por=?,activo=1 WHERE id=?')->execute([$unitId?:null,$tenantId?:null,$type,$concept,$amount,$period,$start,$end,$payer,$id]);
+    $pdo->prepare('UPDATE cargos_recurrentes SET unidad_id=?,inquilino_id=?,tipo=?,concepto=?,importe=?,periodicidad=?,fecha_inicio=?,fecha_fin=?,pagado_por=? WHERE id=?')->execute([$unitId?:null,$tenantId?:null,$type,$concept,$amount,$period,$start,$end,$payer,$id]);
    }else{$pdo->prepare('INSERT INTO cargos_recurrentes(unidad_id,inquilino_id,tipo,concepto,importe,periodicidad,fecha_inicio,fecha_fin,pagado_por,activo) VALUES(?,?,?,?,?,?,?,?,?,1)')->execute([$unitId?:null,$tenantId?:null,$type,$concept,$amount,$period,$start,$end,$payer]);}
    $created=sync_recurring_charges($pdo);$ok='Plantilla guardada. '.($created?'Se han generado '.$created.' cargos nuevos.':'No había cargos pendientes que generar.');
   }elseif($action==='toggle'){
