@@ -30,6 +30,10 @@
 .sidebar a.nav-help{margin-top:0;border-top:0;padding-top:5px}
 }
 
+/* Navegación adaptable: menú normal en escritorio y desplegable en móvil */
+.mobile-menu-toggle{display:none}
+.mobile-nav-links{display:contents}
+
 /* Adaptación móvil global: conserva el escritorio y mejora el uso táctil */
 html{-webkit-text-size-adjust:100%}
 img,svg,video,canvas{max-width:100%;height:auto}
