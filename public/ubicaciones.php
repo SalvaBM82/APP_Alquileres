@@ -32,8 +32,8 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 $editLoc=null;$editUnit=null;
 if(isset($_GET['editar_ubicacion'])){$q=$pdo->prepare('SELECT * FROM ubicaciones WHERE id=?');$q->execute([(int)$_GET['editar_ubicacion']]);$editLoc=$q->fetch()?:null;}
 if(isset($_GET['editar_unidad'])){$q=$pdo->prepare('SELECT * FROM unidades WHERE id=?');$q->execute([(int)$_GET['editar_unidad']]);$editUnit=$q->fetch()?:null;}
-$locations=$pdo->query("SELECT l.*,COUNT(DISTINCT u.id) unidades,COUNT(DISTINCT t.id) inquilinos FROM ubicaciones l LEFT JOIN unidades u ON u.ubicacion_id=l.id LEFT JOIN inquilinos t ON t.unidad_id=u.id GROUP BY l.id ORDER BY l.estado='ACTIVA' DESC,l.nombre")->fetchAll();
-$units=$pdo->query("SELECT u.*,l.nombre ubicacion_nombre,COUNT(DISTINCT t.id) inquilinos FROM unidades u JOIN ubicaciones l ON l.id=u.ubicacion_id LEFT JOIN inquilinos t ON t.unidad_id=u.id GROUP BY u.id ORDER BY l.nombre,u.nombre")->fetchAll();
+$locations=$pdo->query("SELECT l.*,(SELECT COUNT(*) FROM unidades u WHERE u.ubicacion_id=l.id) unidades,(SELECT COUNT(*) FROM inquilinos t JOIN unidades u ON u.id=t.unidad_id WHERE u.ubicacion_id=l.id) inquilinos FROM ubicaciones l ORDER BY l.estado='ACTIVA' DESC,l.nombre")->fetchAll();
+$units=$pdo->query("SELECT u.*,l.nombre ubicacion_nombre,(SELECT COUNT(*) FROM inquilinos t WHERE t.unidad_id=u.id) inquilinos FROM unidades u JOIN ubicaciones l ON l.id=u.ubicacion_id ORDER BY l.nombre,u.nombre")->fetchAll();
 ?><!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ubicaciones e inmuebles · APP Alquileres</title><link rel="stylesheet" href="assets/app.css"></head><body>
 <header class="topbar"><a class="brand" href="index.php"><span class="brand-icon">⌂</span><span>APP Alquileres<small>Ubicaciones e inmuebles</small></span></a><a class="btn outline" href="index.php">Volver al inicio</a></header><main class="content">
 <div class="page-head"><div><h1>Ubicaciones e inmuebles</h1><p class="muted">Gestiona viviendas independientes o ubicaciones que contienen varias unidades.</p></div></div>
