@@ -9,8 +9,9 @@ function dbcli(): ?string {
 }
 function run_sql_cli(string $file): void {
  $cfg=require __DIR__.'/../config/config.php';$bin=dbcli();if(!$bin)throw new RuntimeException('No se encuentra mysql.exe/mariadb.exe. Comprueba la instalación de WAMP.');
- $cmd=[$bin,'--host='.$cfg['db_host'],'--user='.$cfg['db_user'],'--default-character-set=utf8mb4',$cfg['db_name']];
+ $cmd=[$bin,'--host='.$cfg['db_host'],'--user='.$cfg['db_user'],'--default-character-set=utf8mb4'];
  if($cfg['db_pass']!=='')$cmd[]='--password='.$cfg['db_pass'];
+ $cmd[]=$cfg['db_name'];
  $pipes=[];$proc=proc_open($cmd,[['pipe','r'],['pipe','w'],['pipe','w']],$pipes);
  if(!is_resource($proc))throw new RuntimeException('No se pudo iniciar el cliente de base de datos.');
  $fh=fopen($file,'rb');if(!$fh){fclose($pipes[0]);throw new RuntimeException('No se puede leer el archivo SQL.');}
