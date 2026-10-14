@@ -11,7 +11,7 @@ Aplicación independiente PHP + MySQL/MariaDB basada en el documento funcional *
 6. Entra en `http://localhost/APP-Alquileres/public/login.php`.
 
 ## Módulos incluidos
-- **Inquilinos:** alta, edición, borrado cuando no hay movimientos asociados, activos primero, estado, notas, fechas, unidad, alquiler mensual, opción para crear fianza automáticamente y PDF descargable individual con cargos, ingresos, balance y fianzas.
+- **Inquilinos:** alta, edición, borrado cuando no hay movimientos asociados, activos primero, filtro global por inquilino en cabecera, estado, notas, fechas, unidad, alquiler mensual, opción para crear fianza automáticamente y PDF descargable individual con cargos, ingresos, balance y fianzas.
 - **Cargos:** alta, edición y borrado; categoría, concepto, inquilino, importe, mes y pagado por; total a cobrar.
 - **Ingresos:** alta, edición y borrado de ingresos manuales; método y total cobrado. Los ingresos contables generados al liquidar fianzas se protegen frente al borrado manual.
 - **Fianzas y daños:** alta, edición, borrado antes de liquidar, motivo, importe de daños y detalle; botón de liquidación que calcula deuda, retención, devolución y crea ingresos de compensación/daños.
@@ -22,4 +22,4 @@ Aplicación independiente PHP + MySQL/MariaDB basada en el documento funcional *
 - **Interfaz adaptable** a escritorio y móvil, pendiente de pruebas con dispositivos reales.
 
 ## Importante
-Esta es una primera implementación amplia del manual, todavía no validada de extremo a extremo en tu instalación. Antes de usar datos reales, prueba los flujos con datos ficticios y guarda copias externas. No expongas la aplicación a Internet sin HTTPS, credenciales de base de datos adecuadas y revisión de seguridad. El botón de ficha genera un PDF descargable directamente desde PHP.
+Esta es la primera implementación amplia del manual, todavía no validada de extremo a extremo en tu instalación. Antes de usar datos reales, prueba los flujos con datos ficticios y guarda copias externas. No expongas la aplicación a Internet sin HTTPS, credenciales de base de datos adecuadas y revisión de seguridad. El botón de ficha genera un PDF descargable directamente desde PHP.
