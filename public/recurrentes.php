@@ -5,14 +5,14 @@ require_once __DIR__ . '/../app/recurring_charges.php';
 $user=current_user();
 if($_SERVER['REQUEST_METHOD']!=='POST')sync_recurring_charges($pdo);
 $error='';$ok='';
-$types=['Alquiler','Basura','Luz','Agua','Internet','Electricidad','Reparacion','Otros'];
+$typeRows=$pdo->query('SELECT nombre,activo FROM categorias_cargos ORDER BY orden,nombre')->fetchAll();$types=array_values(array_map(fn($r)=>$r['nombre'],array_filter($typeRows,fn($r)=>(int)$r['activo']===1)));
 $periods=['MENSUAL'=>'Mensual','TRIMESTRAL'=>'Trimestral','ANUAL'=>'Anual'];
 if($_SERVER['REQUEST_METHOD']==='POST'){
  verify_csrf();$action=$_POST['action']??'';
  try{
   if($action==='save'){
    $id=(int)($_POST['id']??0);$scope=$_POST['scope']??'unidad';$unitId=(int)($_POST['unidad_id']??0);$tenantId=(int)($_POST['inquilino_id']??0);
-   $type=$_POST['tipo']??'Otros';$concept=trim($_POST['concepto']??'');$amount=max(0,(float)($_POST['importe']??0));$period=$_POST['periodicidad']??'MENSUAL';$start=($_POST['fecha_inicio']??'')?:null;$end=($_POST['fecha_fin']??'')?:null;$priceEffect=trim($_POST['fecha_efecto_precio']??'');$payer=$_POST['pagado_por']??'Inquilino';
+   $type=trim($_POST['tipo']??'');$typeQ=$pdo->prepare('SELECT activo FROM categorias_cargos WHERE nombre=?');$typeQ->execute([$type]);$typeActive=$typeQ->fetchColumn();if($typeActive===false||!(int)$typeActive)throw new RuntimeException('Selecciona una categoría activa válida.');$concept=trim($_POST['concepto']??'');$amount=max(0,(float)($_POST['importe']??0));$period=$_POST['periodicidad']??'MENSUAL';$start=($_POST['fecha_inicio']??'')?:null;$end=($_POST['fecha_fin']??'')?:null;$priceEffect=trim($_POST['fecha_efecto_precio']??'');$payer=$_POST['pagado_por']??'Inquilino';
    if(!in_array($scope,['unidad','inquilino'],true))throw new RuntimeException('Selecciona el ámbito de la plantilla.');
    if(!in_array($type,$types,true)||!in_array($period,array_keys($periods),true)||!in_array($payer,['Propietario','Inquilino','Otro'],true))throw new RuntimeException('Revisa el tipo, periodicidad y quién paga.');
    if($concept===''||$amount<=0||!$start)throw new RuntimeException('Indica concepto, importe mayor que cero y fecha de inicio.');if($priceEffect!==''&&!preg_match('/^\\d{4}-(0[1-9]|1[0-2])$/',$priceEffect))throw new RuntimeException('El mes de efecto del precio debe tener formato AAAA-MM.');if($id&&$priceEffect==='')throw new RuntimeException('Al editar una plantilla, indica el mes desde el que se aplica el precio.');
@@ -54,7 +54,7 @@ function rv(array $row,string $key,$default=''):string{return e($row[$key]??$def
 <section class="panel"><div class="page-head"><h2><?=$edit?'Editar plantilla':'Nueva plantilla recurrente'?></h2><?php if($edit):?><a class="btn outline" href="recurrentes.php">Cancelar</a><?php endif;?></div>
 <form method="post" class="recurring-grid"><input type="hidden" name="csrf" value="<?=e(csrf_token())?>"><input type="hidden" name="action" value="save"><input type="hidden" name="id" value="<?=rv($edit??[],'id','0')?>">
 <div><label>Aplicar a *</label><select name="scope" id="scope" required><option value="unidad" <?=empty($edit['inquilino_id'])?'selected':''?>>Ubicación / unidad (base)</option><option value="inquilino" <?=!empty($edit['inquilino_id'])?'selected':''?>>Inquilino (personalizada)</option></select></div>
-<div><label>Tipo de cargo *</label><select name="tipo" required><?php foreach($types as $type):?><option value="<?=e($type)?>" <?=rv($edit??[],'tipo','Alquiler')===$type?'selected':''?>><?=e($type)?></option><?php endforeach;?></select></div>
+<div><label>Tipo de cargo *</label><select name="tipo" required><?php $typeOptions=$types;if(!empty($edit['tipo'])&&!in_array($edit['tipo'],$typeOptions,true))$typeOptions[]=$edit['tipo'];foreach($typeOptions as $type):?><option value="<?=e($type)?>" <?=rv($edit??[],'tipo','Alquiler')===$type?'selected':''?>><?=e($type)?></option><?php endforeach;?></select></div>
 <div id="unit-field"><label>Unidad *</label><select name="unidad_id" id="unidad_id"><?php foreach($units as $u):?><option value="<?=$u['id']?>" <?=((int)($edit['unidad_id']??0)===(int)$u['id'])?'selected':''?>><?=e($u['ubicacion_nombre'].' · '.$u['nombre'])?></option><?php endforeach;?></select></div>
 <div id="tenant-field"><label>Inquilino *</label><select name="inquilino_id" id="inquilino_id"><?php foreach($tenants as $t):?><option value="<?=$t['id']?>" <?=((int)($edit['inquilino_id']??0)===(int)$t['id'])?'selected':''?>><?=e($t['nombre'].' · '.($t['ubicacion_nombre']??''). ' / '.($t['unidad_nombre']??'sin unidad'))?></option><?php endforeach;?></select></div>
 <div><label>Concepto *</label><input name="concepto" required maxlength="255" value="<?=rv($edit??[],'concepto')?>" placeholder="Ej. Alquiler, Basura, Internet"></div>
