@@ -27,7 +27,7 @@ $user=current_user();if($_SERVER['REQUEST_METHOD']!=='POST')sync_recurring_charg
 <div class="nav-heading">MENÚ PRINCIPAL</div>
 <a class="nav-item" href="index.php?page=dashboard"><span class="nav-icon" aria-hidden="true">🏠</span><span>Resumen general</span></a>
 <div class="nav-divider"><span>ALQUILERES</span></div>
-<a class="nav-item " href="ubicaciones.php" ><span class="nav-icon" aria-hidden="true">🏢</span><span>Ubicaciones e inmuebles</span></a>
+<a class="nav-item" href="ubicaciones.php"><span class="nav-icon" aria-hidden="true">🏢</span><span>Ubicaciones e inmuebles</span></a>
 <a class="nav-item" href="index.php?page=inquilinos"><span class="nav-icon" aria-hidden="true">👥</span><span>Inquilinos</span></a>
 <div class="nav-divider"><span>ECONOMÍA</span></div>
 <a class="nav-item" href="recurrentes.php"><span class="nav-icon" aria-hidden="true">🔁</span><span>Cargos recurrentes</span></a>
@@ -35,9 +35,9 @@ $user=current_user();if($_SERVER['REQUEST_METHOD']!=='POST')sync_recurring_charg
 <a class="nav-item" href="index.php?page=ingresos"><span class="nav-icon" aria-hidden="true">💶</span><span>Ingresos</span></a>
 <a class="nav-item" href="index.php?page=fianzas"><span class="nav-icon" aria-hidden="true">🔐</span><span>Fianzas</span></a>
 <div class="nav-divider"><span>HERRAMIENTAS</span></div>
-<a class="nav-item " href="estadisticas.php" ><span class="nav-icon" aria-hidden="true">📊</span><span>Estadísticas</span></a>
+<a class="nav-item" href="estadisticas.php"><span class="nav-icon" aria-hidden="true">📊</span><span>Estadísticas</span></a>
 <div class="nav-spacer"></div><?php if($user['rol']==='ADMIN'):?><a class="nav-item" href="configuracion.php"><span class="nav-icon" aria-hidden="true">🛠️</span><span>Configuración</span></a><?php endif;?>
-<a class="nav-item nav-help active" href="ayuda.php" aria-current="page"><span class="nav-icon" aria-hidden="true">❔</span><span>Ayuda y manual</span></a>
+<a class="nav-item active" href="ayuda.php" aria-current="page"><span class="nav-icon" aria-hidden="true">❔</span><span>Ayuda y manual</span></a>
 </div></nav>
 <main class="content help-page">
 <div class="page-head"><div><h1>Ayuda y manual de uso</h1><p class="muted">Guía para aprender a utilizar la aplicación paso a paso, aunque sea tu primera vez.</p></div><button class="btn outline" type="button" onclick="window.print()">Imprimir / guardar PDF</button></div>
