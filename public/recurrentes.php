@@ -27,7 +27,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     $pdo->beginTransaction();
     $historyQ=$pdo->prepare('SELECT COUNT(*) FROM cargos_recurrentes_precios WHERE recurrente_id=?');$historyQ->execute([$id]);
     if((int)$historyQ->fetchColumn()===0){$pdo->prepare('INSERT INTO cargos_recurrentes_precios(recurrente_id,fecha_efecto,importe) VALUES(?,?,?)')->execute([$id,substr($old['fecha_inicio'],0,7).'-01',$oldAmount]);}
-    if($priceChanged){$pdo->prepare('INSERT INTO cargos_recurrentes_precios(recurrente_id,fecha_efecto,importe) VALUES(?,?,?) ON DUPLICATE KEY UPDATE importe=VALUES(importe)')->execute([$id,$effectDate,$amount]);}
+    if($priceChanged){$latestPriceQ=$pdo->prepare('SELECT MAX(fecha_efecto) FROM cargos_recurrentes_precios WHERE recurrente_id=?');$latestPriceQ->execute([$id]);$latestPrice=$latestPriceQ->fetchColumn();if($latestPrice&&$effectDate<$latestPrice)throw new RuntimeException('El mes de efecto no puede ser anterior al último cambio de precio registrado ('.$latestPrice.').');$pdo->prepare('INSERT INTO cargos_recurrentes_precios(recurrente_id,fecha_efecto,importe) VALUES(?,?,?) ON DUPLICATE KEY UPDATE importe=VALUES(importe)')->execute([$id,$effectDate,$amount]);}
     $pdo->prepare('UPDATE cargos_recurrentes SET unidad_id=?,inquilino_id=?,tipo=?,concepto=?,importe=?,periodicidad=?,fecha_inicio=?,fecha_fin=?,pagado_por=? WHERE id=?')->execute([$unitId?:null,$tenantId?:null,$type,$concept,$amount,$period,$start,$end,$payer,$id]);
     if($priceChanged){$pdo->prepare("UPDATE cargos SET importe=?,pagado_por=? WHERE recurrente_id=? AND periodo_recurrente>=? AND estado_pago='PENDIENTE'")->execute([$amount,$payer,$id,$priceEffect]);}
     $pdo->commit();
@@ -38,7 +38,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   }elseif($action==='toggle'){
    $id=(int)($_POST['id']??0);$pdo->prepare('UPDATE cargos_recurrentes SET activo=IF(activo=1,0,1) WHERE id=?')->execute([$id]);$created=sync_recurring_charges($pdo);$ok='Estado de la plantilla actualizado. '.($created?'Se han generado '.$created.' cargos nuevos.':'Los cargos ya registrados se han conservado.');
   }
- }catch(Throwable $e){$error=$e instanceof PDOException?'No se pudo guardar la plantilla. Comprueba los datos.':$e->getMessage();}
+ }catch(Throwable $e){if($pdo->inTransaction())$pdo->rollBack();$error=$e instanceof PDOException?'No se pudo guardar la plantilla. Comprueba los datos.':$e->getMessage();}
 }
 $edit=null;if(isset($_GET['edit'])){$q=$pdo->prepare('SELECT * FROM cargos_recurrentes WHERE id=?');$q->execute([(int)$_GET['edit']]);$edit=$q->fetch()?:null;}
 $units=$pdo->query("SELECT u.id,u.nombre,l.nombre ubicacion_nombre FROM unidades u JOIN ubicaciones l ON l.id=u.ubicacion_id ORDER BY l.nombre,u.nombre")->fetchAll();
