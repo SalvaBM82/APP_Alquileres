@@ -62,8 +62,8 @@ function val(array $row,string $key,$default=''): string {return e($row[$key]??$
 <div class="nav-divider"><span>ALQUILERES</span></div>
 <a class="nav-item" href="ubicaciones.php"><span class="nav-icon" aria-hidden="true">🏢</span><span>Ubicaciones e inmuebles</span></a>
 <a class="nav-item <?=$page==='inquilinos'?'active':''?>" href="index.php?page=inquilinos" <?=$page==='inquilinos'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">👥</span><span>Inquilinos</span></a>
-<a class="nav-item" href="recurrentes.php"><span class="nav-icon" aria-hidden="true">🔁</span><span>Cargos recurrentes</span></a>
 <div class="nav-divider"><span>ECONOMÍA</span></div>
+<a class="nav-item" href="recurrentes.php"><span class="nav-icon" aria-hidden="true">🔁</span><span>Cargos recurrentes</span></a>
 <a class="nav-item <?=$page==='cargos'?'active':''?>" href="index.php?page=cargos" <?=$page==='cargos'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">📋</span><span>Cargos</span></a>
 <a class="nav-item <?=$page==='ingresos'?'active':''?>" href="index.php?page=ingresos" <?=$page==='ingresos'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">💶</span><span>Ingresos</span></a>
 <a class="nav-item <?=$page==='fianzas'?'active':''?>" href="index.php?page=fianzas" <?=$page==='fianzas'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">🔐</span><span>Fianzas</span></a>
