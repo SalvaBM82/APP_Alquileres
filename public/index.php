@@ -69,7 +69,7 @@ function val(array $row,string $key,$default=''): string {return e($row[$key]??$
 <a class="nav-item <?=$page==='fianzas'?'active':''?>" href="index.php?page=fianzas" <?=$page==='fianzas'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">🔐</span><span>Fianzas</span></a>
 <div class="nav-divider"><span>HERRAMIENTAS</span></div>
 <a class="nav-item" href="estadisticas.php"><span class="nav-icon" aria-hidden="true">📊</span><span>Estadísticas</span></a>
-<?php if($user['rol']==='ADMIN'):?><a class="nav-item <?=$page==='usuarios'?'active':''?>" href="index.php?page=usuarios" <?=$page==='usuarios'?'aria-current="page"':''?>><span class="nav-icon" aria-hidden="true">⚙️</span><span>Usuarios</span></a><a class="nav-item" href="backup.php"><span class="nav-icon" aria-hidden="true">💾</span><span>Copias de seguridad</span></a><?php endif;?>
+
 <div class="nav-spacer"></div><?php if($user['rol']==='ADMIN'):?><a class="nav-item <?=$page==='configuracion'?'active':''?>" href="configuracion.php"><span class="nav-icon" aria-hidden="true">🛠️</span><span>Configuración</span></a><?php endif;?><a class="nav-item nav-help" href="ayuda.php"><span class="nav-icon" aria-hidden="true">❔</span><span>Ayuda y manual</span></a>
 </div></nav><main class="content">
 <?php if(!empty($_SESSION['flash'])):?><div class="notice"><?=e($_SESSION['flash'])?></div><?php unset($_SESSION['flash']);endif;?><?php if($error):?><div class="notice error"><?=e($error)?></div><?php endif;?>
