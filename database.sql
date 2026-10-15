@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS inquilinos (
 CREATE TABLE IF NOT EXISTS cargos (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   fecha DATE NOT NULL,
-  tipo ENUM('Alquiler','Basura','Luz','Agua','Internet','Electricidad','Reparacion','Otros') NOT NULL DEFAULT 'Alquiler',
+  tipo VARCHAR(80) NOT NULL DEFAULT 'Alquiler',
   concepto VARCHAR(255) NOT NULL,
   inquilino_id INT UNSIGNED NOT NULL,
   importe DECIMAL(10,2) NOT NULL,
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS cargos_recurrentes (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   unidad_id INT UNSIGNED NULL,
   inquilino_id INT UNSIGNED NULL,
-  tipo ENUM('Alquiler','Basura','Luz','Agua','Internet','Electricidad','Reparacion','Otros') NOT NULL DEFAULT 'Otros',
+  tipo VARCHAR(80) NOT NULL DEFAULT 'Otros',
   concepto VARCHAR(255) NOT NULL,
   importe DECIMAL(10,2) NOT NULL,
   periodicidad ENUM('MENSUAL','TRIMESTRAL','ANUAL') NOT NULL DEFAULT 'MENSUAL',
@@ -219,3 +219,20 @@ CREATE TABLE IF NOT EXISTS cargos_recurrentes_exclusiones (
 
 -- Periodo al que corresponde el ingreso, independiente de la fecha efectiva de cobro.
 ALTER TABLE ingresos ADD COLUMN IF NOT EXISTS periodo_alquiler CHAR(7) NULL COMMENT 'Mes de alquiler al que se atribuye el ingreso, formato AAAA-MM';
+
+
+-- Categorías configurables para cargos. Se conserva el texto en los movimientos para
+-- mantener compatibilidad con el historial y las estadísticas existentes.
+CREATE TABLE IF NOT EXISTS categorias_cargos (
+  nombre VARCHAR(80) NOT NULL PRIMARY KEY,
+  activo TINYINT(1) NOT NULL DEFAULT 1,
+  orden INT NOT NULL DEFAULT 0,
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+INSERT IGNORE INTO categorias_cargos(nombre,activo,orden) VALUES
+ ('Alquiler',1,10),('Basura',1,20),('Luz',1,30),('Agua',1,40),('Internet',1,50),
+ ('Electricidad',1,60),('Reparacion',1,70),('Otros',1,80);
+-- Conversión idempotente desde el ENUM antiguo a texto configurable.
+ALTER TABLE cargos MODIFY COLUMN tipo VARCHAR(80) NOT NULL DEFAULT 'Alquiler';
+ALTER TABLE cargos_recurrentes MODIFY COLUMN tipo VARCHAR(80) NOT NULL DEFAULT 'Otros';
