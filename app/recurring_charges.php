@@ -22,6 +22,7 @@ function sync_recurring_charges(PDO $pdo): int {
     $rentConfiguredQ = $pdo->prepare("SELECT COUNT(*) FROM cargos_recurrentes WHERE tipo='Alquiler' AND (unidad_id=? OR inquilino_id=?)");
     $excluded = $pdo->prepare('SELECT id FROM cargos_recurrentes_exclusiones WHERE inquilino_id=? AND recurrente_id=? AND periodo_recurrente=? LIMIT 1');
     $insert = $pdo->prepare("INSERT IGNORE INTO cargos(fecha,tipo,concepto,inquilino_id,importe,mes,pagado_por,recurrente_id,periodo_recurrente) VALUES(?,?,?,?,?,?,?,?,?)");
+    $priceForMonth = $pdo->prepare('SELECT importe FROM cargos_recurrentes_precios WHERE recurrente_id=? AND fecha_efecto<=? ORDER BY fecha_efecto DESC,id DESC LIMIT 1');
     $created = 0;
 
     foreach ($tenants as $tenant) {
@@ -95,6 +96,13 @@ function sync_recurring_charges(PDO $pdo): int {
                     if ($exists->fetchColumn()) continue;
                 }
 
+                // El precio se obtiene del historial vigente en el mes del cargo.
+                $amount = (float)$template['importe'];
+                if ((int)$template['id'] > 0) {
+                    $priceForMonth->execute([(int)$template['id'], $monthKey.'-01']);
+                    $historicalPrice = $priceForMonth->fetchColumn();
+                    if ($historicalPrice !== false) $amount = (float)$historicalPrice;
+                }
                 // El concepto identifica claramente el mes al que pertenece el cargo.
                 $monthNames = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
                 $monthLabel = $monthNames[(int)$month->format('n') - 1].' '.$month->format('Y');
@@ -102,7 +110,7 @@ function sync_recurring_charges(PDO $pdo): int {
                 $concept = $baseConcept.' '.$monthLabel;
                 $insert->execute([
                     $month->format('Y-m-01'), $template['tipo'], $concept, $tenantId,
-                    (float)$template['importe'], $monthKey, $template['pagado_por'],
+                    $amount, $monthKey, $template['pagado_por'],
                     (int)$template['id'], $monthKey
                 ]);
                 $created += $insert->rowCount();
