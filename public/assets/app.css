@@ -242,3 +242,29 @@ body:has(.charge-list-toolbar) .table-wrap td .btn.charge-mark-paid{background:#
 body:has(.charge-list-toolbar) .table-wrap td .btn.charge-mark-paid:hover{background:#125e37}
 body:has(.charge-list-toolbar) .table-wrap td .btn.charge-mark-pending{background:#fff;border:1px solid #c94d48;color:#a52d2d}
 body:has(.charge-list-toolbar) .table-wrap td .btn.charge-mark-pending:hover{background:#ffe4e1}
+
+
+/* Botones desactivados: contraste claro para distinguirlos de las acciones disponibles */
+.btn:disabled,
+button.btn:disabled,
+.btn[disabled],
+button[disabled].btn {
+  background: #e9edf2 !important;
+  border-color: #d5dbe4 !important;
+  color: #8a94a3 !important;
+  box-shadow: none !important;
+  opacity: .85;
+  cursor: not-allowed !important;
+  transform: none !important;
+  filter: grayscale(.25);
+}
+.btn:disabled:hover,
+button.btn:disabled:hover,
+.btn[disabled]:hover,
+button[disabled].btn:hover {
+  background: #e9edf2 !important;
+  border-color: #d5dbe4 !important;
+  color: #8a94a3 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
