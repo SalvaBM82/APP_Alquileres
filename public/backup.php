@@ -31,9 +31,16 @@ if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();$action=$_POST['action']??
   if($action==='create'){
    global $pdo;
    $cfg=require __DIR__.'/../config/config.php';$target=live_database_target($pdo);$bin=dbcli();if(!$bin)throw new RuntimeException('No se encuentra mysql.exe/mariadb.exe en WAMP.');
-   $dump=null;foreach(array_merge(glob('C:/wamp64/bin/mysql/mysql*/bin/mysqldump.exe')?:[],glob('C:/wamp64/bin/mariadb/mariadb*/bin/mariadb-dump.exe')?:[],glob('C:/wamp64/bin/mariadb/mariadb*/bin/mysqldump.exe')?:[]) as $f){if(is_file($f)){$dump=$f;break;}}
+   // Priorizar el volcado nativo de MariaDB cuando esté disponible; evitar incompatibilidades de MySQL 8 con MariaDB.
+   $dump=null;$dumpIsMariaDb=false;
+   foreach(array_merge(glob('C:/wamp64/bin/mariadb/mariadb*/bin/mariadb-dump.exe')?:[],glob('C:/wamp64/bin/mariadb/mariadb*/bin/mysqldump.exe')?:[],glob('C:/wamp64/bin/mysql/mysql*/bin/mysqldump.exe')?:[]) as $f){
+    if(is_file($f)){$dump=$f;$dumpIsMariaDb=(stripos(basename($f),'mariadb-dump')!==false||strpos($f,'/mariadb/')!==false||strpos($f,'\\\\mariadb\\\\')!==false);break;}
+   }
    if(!$dump)throw new RuntimeException('No se encuentra mysqldump.exe/mariadb-dump.exe en WAMP.');
-   $name='backup_'.date('Y-m-d_H-i-s').'.sql';$path=$dir.'/'.$name;$cmd=[$dump,'--protocol=TCP','--host='.$cfg['db_host'],'--port='.$target['port'],'--user='.$cfg['db_user'],'--default-character-set=utf8mb4'];if($cfg['db_pass']!=='')$cmd[]='--password='.$cfg['db_pass'];$cmd[]=$target['db'];
+   $name='backup_'.date('Y-m-d_H-i-s').'.sql';$path=$dir.'/'.$name;$cmd=[$dump,'--protocol=TCP','--host='.$cfg['db_host'],'--port='.$target['port'],'--user='.$cfg['db_user'],'--default-character-set=utf8mb4'];
+   // MySQL 8 consulta COLUMN_STATISTICS por defecto; MariaDB no dispone de esa tabla.
+   if(!$dumpIsMariaDb)$cmd[]='--column-statistics=0';
+   if($cfg['db_pass']!=='')$cmd[]='--password='.$cfg['db_pass'];$cmd[]=$target['db'];
    $pipes=[];$proc=proc_open($cmd,[['pipe','r'],['file',$path,'w'],['pipe','w']],$pipes);if(!is_resource($proc))throw new RuntimeException('No se pudo iniciar mysqldump.');fclose($pipes[0]);$errDump=stream_get_contents($pipes[2]);fclose($pipes[2]);$code=proc_close($proc);
    if($code!==0||!is_file($path)||filesize($path)<50){@unlink($path);throw new RuntimeException('No se pudo crear la copia SQL. '.$errDump);}$msg='Copia creada: '.$name;
   }elseif($action==='delete'){
