@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS ingresos (
   inquilino_id INT UNSIGNED NOT NULL,
   metodo ENUM('Transferencia','Bizum','Efectivo','Otro') NOT NULL DEFAULT 'Transferencia',
   origen ENUM('NORMAL','COMPENSACION_DEUDA','RETENCION_DANOS') NOT NULL DEFAULT 'NORMAL',
+  periodo_alquiler CHAR(7) NULL COMMENT 'Mes de alquiler al que se atribuye el ingreso, formato AAAA-MM',
   fianza_id INT UNSIGNED NULL,
   creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_ingresos_inquilino FOREIGN KEY (inquilino_id) REFERENCES inquilinos(id) ON DELETE RESTRICT,
@@ -192,3 +193,7 @@ CREATE TABLE IF NOT EXISTS cargos_recurrentes_exclusiones (
   CONSTRAINT fk_recurrentes_exclusion_inquilino FOREIGN KEY (inquilino_id) REFERENCES inquilinos(id) ON DELETE RESTRICT,
   UNIQUE KEY uq_recurrente_exclusion (inquilino_id,recurrente_id,periodo_recurrente)
 ) ENGINE=InnoDB;
+
+
+-- Periodo al que corresponde el ingreso, independiente de la fecha efectiva de cobro.
+ALTER TABLE ingresos ADD COLUMN IF NOT EXISTS periodo_alquiler CHAR(7) NULL COMMENT 'Mes de alquiler al que se atribuye el ingreso, formato AAAA-MM';
