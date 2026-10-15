@@ -17,7 +17,7 @@ function sync_recurring_charges(PDO $pdo): int {
 
     $tenants = $pdo->query("SELECT id, unidad_id, fecha_entrada, fecha_salida, alquiler_mensual FROM inquilinos WHERE fecha_entrada IS NOT NULL AND (fecha_salida IS NULL OR fecha_salida >= fecha_entrada)")->fetchAll(PDO::FETCH_ASSOC);
     $currentMonth = new DateTimeImmutable(date('Y-m-01'));
-    $exists = $pdo->prepare("SELECT id FROM cargos WHERE inquilino_id=? AND tipo=? AND mes=? AND LOWER(TRIM(concepto))=LOWER(TRIM(?)) LIMIT 1");
+    $exists = $pdo->prepare("SELECT id FROM cargos WHERE inquilino_id=? AND tipo=? AND mes=? AND (LOWER(TRIM(concepto))=LOWER(TRIM(?)) OR (recurrente_id=? AND periodo_recurrente=?)) LIMIT 1");
     $existsRent = $pdo->prepare("SELECT id FROM cargos WHERE inquilino_id=? AND tipo='Alquiler' AND mes=? LIMIT 1");
     $rentConfiguredQ = $pdo->prepare("SELECT COUNT(*) FROM cargos_recurrentes WHERE tipo='Alquiler' AND (unidad_id=? OR inquilino_id=?)");
     $excluded = $pdo->prepare('SELECT id FROM cargos_recurrentes_exclusiones WHERE inquilino_id=? AND recurrente_id=? AND periodo_recurrente=? LIMIT 1');
@@ -91,11 +91,15 @@ function sync_recurring_charges(PDO $pdo): int {
                     $existsRent->execute([$tenantId, $monthKey]);
                     if ($existsRent->fetchColumn()) continue;
                 } else {
-                    $exists->execute([$tenantId, $template['tipo'], $monthKey, $template['concepto']]);
+                    $exists->execute([$tenantId, $template['tipo'], $monthKey, $template['concepto'], (int)$template['id'], $monthKey]);
                     if ($exists->fetchColumn()) continue;
                 }
 
-                $concept = $template['id'] === 0 ? 'Alquiler mensual '.$monthKey : $template['concepto'];
+                // El concepto identifica claramente el mes al que pertenece el cargo.
+                $monthNames = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+                $monthLabel = $monthNames[(int)$month->format('n') - 1].' '.$month->format('Y');
+                $baseConcept = $template['id'] === 0 ? 'Alquiler mensual' : trim((string)$template['concepto']);
+                $concept = $baseConcept.' '.$monthLabel;
                 $insert->execute([
                     $month->format('Y-m-01'), $template['tipo'], $concept, $tenantId,
                     (float)$template['importe'], $monthKey, $template['pagado_por'],
