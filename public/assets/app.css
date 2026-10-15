@@ -226,3 +226,19 @@ body:has(.charge-list-toolbar) .table-wrap td:nth-child(8) .btn{min-height:26px;
  body:has(.charge-list-toolbar) .table-wrap th,
  body:has(.charge-list-toolbar) .table-wrap td{padding:7px 6px}
 }
+
+/* Estado de pago: identificación inmediata por color suave de fila */
+body:has(.charge-list-toolbar) .table-wrap tr.charge-row-pending td{background:#fff2f1}
+body:has(.charge-list-toolbar) .table-wrap tr.charge-row-pending td:first-child{box-shadow:inset 3px 0 #dc6660}
+body:has(.charge-list-toolbar) .table-wrap tr.charge-row-pending:hover td{background:#ffe9e7}
+body:has(.charge-list-toolbar) .table-wrap tr.charge-row-paid td{background:#f0faf3}
+body:has(.charge-list-toolbar) .table-wrap tr.charge-row-paid td:first-child{box-shadow:inset 3px 0 #54a978}
+body:has(.charge-list-toolbar) .table-wrap tr.charge-row-paid:hover td{background:#e6f6eb}
+.charge-status{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:750;white-space:nowrap}
+.charge-status.is-pending{color:#a52d2d;background:#ffe0dd;border:1px solid #f5c2bd}
+.charge-status.is-paid{color:#17683b;background:#d8f3e1;border:1px solid #b8e4c7}
+.charge-status-form{display:block;margin:5px 0 0}
+body:has(.charge-list-toolbar) .table-wrap td .btn.charge-mark-paid{background:#187747;border:1px solid #187747;color:#fff}
+body:has(.charge-list-toolbar) .table-wrap td .btn.charge-mark-paid:hover{background:#125e37}
+body:has(.charge-list-toolbar) .table-wrap td .btn.charge-mark-pending{background:#fff;border:1px solid #c94d48;color:#a52d2d}
+body:has(.charge-list-toolbar) .table-wrap td .btn.charge-mark-pending:hover{background:#ffe4e1}
