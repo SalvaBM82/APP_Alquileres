@@ -180,6 +180,18 @@ CREATE TABLE IF NOT EXISTS cargos_recurrentes (
   INDEX idx_recurrentes_periodo (periodicidad,fecha_inicio,fecha_fin)
 ) ENGINE=InnoDB;
 
+-- Historial de precios para aplicar subidas desde un mes concreto sin perder importes anteriores.
+CREATE TABLE IF NOT EXISTS cargos_recurrentes_precios (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  recurrente_id INT UNSIGNED NOT NULL,
+  fecha_efecto DATE NOT NULL,
+  importe DECIMAL(10,2) NOT NULL,
+  creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_recurrente_precio_plantilla FOREIGN KEY (recurrente_id) REFERENCES cargos_recurrentes(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_recurrente_precio_fecha (recurrente_id,fecha_efecto),
+  INDEX idx_recurrente_precio_fecha (recurrente_id,fecha_efecto)
+) ENGINE=InnoDB;
+
 -- Campos de trazabilidad para saber qué plantilla generó cada cargo.
 -- Las comprobaciones con information_schema permiten importar database.sql más de una vez.
 SET @col_recurrente := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='cargos' AND COLUMN_NAME='recurrente_id');
