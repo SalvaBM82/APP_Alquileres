@@ -7,11 +7,17 @@ function dbcli(): ?string {
  $which=trim((string)@shell_exec('where mysql.exe 2>NUL'));if($which!=='')return trim(explode("\n",$which)[0]);
  return null;
 }
+function live_database_target(PDO $pdo): array {
+ $row=$pdo->query('SELECT DATABASE() AS db, @@port AS port')->fetch(PDO::FETCH_ASSOC);
+ if(!$row||empty($row['db']))throw new RuntimeException('No se pudo identificar la base de datos activa de la aplicación.');
+ return ['db'=>(string)$row['db'],'port'=>(int)$row['port']];
+}
 function run_sql_cli(string $file): void {
- $cfg=require __DIR__.'/../config/config.php';$bin=dbcli();if(!$bin)throw new RuntimeException('No se encuentra mysql.exe/mariadb.exe. Comprueba la instalación de WAMP.');
- $cmd=[$bin,'--host='.$cfg['db_host'],'--user='.$cfg['db_user'],'--default-character-set=utf8mb4'];
+ global $pdo;
+ $cfg=require __DIR__.'/../config/config.php';$target=live_database_target($pdo);$bin=dbcli();if(!$bin)throw new RuntimeException('No se encuentra mysql.exe/mariadb.exe. Comprueba la instalación de WAMP.');
+ $cmd=[$bin,'--protocol=TCP','--host='.$cfg['db_host'],'--port='.$target['port'],'--user='.$cfg['db_user'],'--default-character-set=utf8mb4'];
  if($cfg['db_pass']!=='')$cmd[]='--password='.$cfg['db_pass'];
- $cmd[]=$cfg['db_name'];
+ $cmd[]=$target['db'];
  $pipes=[];$proc=proc_open($cmd,[['pipe','r'],['pipe','w'],['pipe','w']],$pipes);
  if(!is_resource($proc))throw new RuntimeException('No se pudo iniciar el cliente de base de datos.');
  $fh=fopen($file,'rb');if(!$fh){fclose($pipes[0]);throw new RuntimeException('No se puede leer el archivo SQL.');}
@@ -23,10 +29,11 @@ $msg='';$err='';
 if($_SERVER['REQUEST_METHOD']==='POST'){verify_csrf();$action=$_POST['action']??'';
  try{
   if($action==='create'){
-   $cfg=require __DIR__.'/../config/config.php';$bin=dbcli();if(!$bin)throw new RuntimeException('No se encuentra mysql.exe/mariadb.exe en WAMP.');
+   global $pdo;
+   $cfg=require __DIR__.'/../config/config.php';$target=live_database_target($pdo);$bin=dbcli();if(!$bin)throw new RuntimeException('No se encuentra mysql.exe/mariadb.exe en WAMP.');
    $dump=null;foreach(array_merge(glob('C:/wamp64/bin/mysql/mysql*/bin/mysqldump.exe')?:[],glob('C:/wamp64/bin/mariadb/mariadb*/bin/mariadb-dump.exe')?:[],glob('C:/wamp64/bin/mariadb/mariadb*/bin/mysqldump.exe')?:[]) as $f){if(is_file($f)){$dump=$f;break;}}
    if(!$dump)throw new RuntimeException('No se encuentra mysqldump.exe/mariadb-dump.exe en WAMP.');
-   $name='backup_'.date('Y-m-d_H-i-s').'.sql';$path=$dir.'/'.$name;$cmd=[$dump,'--host='.$cfg['db_host'],'--user='.$cfg['db_user'],'--default-character-set=utf8mb4'];if($cfg['db_pass']!=='')$cmd[]='--password='.$cfg['db_pass'];$cmd[]=$cfg['db_name'];
+   $name='backup_'.date('Y-m-d_H-i-s').'.sql';$path=$dir.'/'.$name;$cmd=[$dump,'--protocol=TCP','--host='.$cfg['db_host'],'--port='.$target['port'],'--user='.$cfg['db_user'],'--default-character-set=utf8mb4'];if($cfg['db_pass']!=='')$cmd[]='--password='.$cfg['db_pass'];$cmd[]=$target['db'];
    $pipes=[];$proc=proc_open($cmd,[['pipe','r'],['file',$path,'w'],['pipe','w']],$pipes);if(!is_resource($proc))throw new RuntimeException('No se pudo iniciar mysqldump.');fclose($pipes[0]);$errDump=stream_get_contents($pipes[2]);fclose($pipes[2]);$code=proc_close($proc);
    if($code!==0||!is_file($path)||filesize($path)<50){@unlink($path);throw new RuntimeException('No se pudo crear la copia SQL. '.$errDump);}$msg='Copia creada: '.$name;
   }elseif($action==='delete'){
