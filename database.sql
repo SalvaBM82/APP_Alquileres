@@ -147,7 +147,8 @@ INSERT IGNORE INTO configuracion_app(clave,valor) VALUES
  ('nombre_app','APP Alquileres'),
  ('titulo_web','APP Alquileres · Gestión de propiedades'),
  ('subtitulo_app','Gestión de propiedades'),
- ('color_principal','#2859a6');
+ ('color_principal','#2859a6'),
+ ('logo_url','assets/logo.svg');
 
 
 -- Estado de pago de cargos existentes y nuevos (los antiguos se inicializan como pendientes).
