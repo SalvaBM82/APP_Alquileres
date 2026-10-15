@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS cargos (
   importe DECIMAL(10,2) NOT NULL,
   mes CHAR(7) NULL,
   pagado_por ENUM('Propietario','Inquilino','Otro') NOT NULL DEFAULT 'Propietario',
+  estado_pago ENUM('PENDIENTE','PAGADO') NOT NULL DEFAULT 'PENDIENTE',
+  fecha_pago DATE NULL,
   creado_en TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_cargos_inquilino FOREIGN KEY (inquilino_id) REFERENCES inquilinos(id) ON DELETE RESTRICT,
   INDEX idx_cargos_fecha (fecha), INDEX idx_cargos_mes (mes), INDEX idx_cargos_tipo (tipo)
@@ -147,6 +149,14 @@ INSERT IGNORE INTO configuracion_app(clave,valor) VALUES
  ('subtitulo_app','Gestión de propiedades'),
  ('color_principal','#2859a6');
 
+
+-- Estado de pago de cargos existentes y nuevos (los antiguos se inicializan como pendientes).
+SET @col_estado_pago := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='cargos' AND COLUMN_NAME='estado_pago');
+SET @sql_estado_pago := IF(@col_estado_pago=0,'ALTER TABLE cargos ADD COLUMN estado_pago ENUM(''PENDIENTE'',''PAGADO'') NOT NULL DEFAULT ''PENDIENTE''','SELECT 1');
+PREPARE stmt_estado_pago FROM @sql_estado_pago; EXECUTE stmt_estado_pago; DEALLOCATE PREPARE stmt_estado_pago;
+SET @col_fecha_pago := (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='cargos' AND COLUMN_NAME='fecha_pago');
+SET @sql_fecha_pago := IF(@col_fecha_pago=0,'ALTER TABLE cargos ADD COLUMN fecha_pago DATE NULL','SELECT 1');
+PREPARE stmt_fecha_pago FROM @sql_fecha_pago; EXECUTE stmt_fecha_pago; DEALLOCATE PREPARE stmt_fecha_pago;
 
 -- Plantillas para cargos recurrentes, aplicables a una unidad o a un inquilino.
 CREATE TABLE IF NOT EXISTS cargos_recurrentes (
